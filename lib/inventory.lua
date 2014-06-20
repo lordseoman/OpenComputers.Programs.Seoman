@@ -1,7 +1,7 @@
 
 local sFunc
 do
-    local loadFunc, err = loadfile("simon/simons_functions")
+    local loadFunc, err = loadfile("simon/lib/functions.lua")
     if type(loadFunc) == "function" then
         sFunc = loadFunc()
     else
@@ -10,7 +10,7 @@ do
     end
 end
 
-local dict = sFunc:require("simons_dict")
+local dict = sFunc:require("dict")
 
 local Inv = { fake=false }
 
