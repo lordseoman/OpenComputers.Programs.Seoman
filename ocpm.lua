@@ -96,7 +96,7 @@ function OCPM:search(packagename)
     end
     for plistFn in fsList do
         pkglist = self:readfile(plistFn)
-        for pname, pkgdata in ipairs(pkglist) do
+        for pname, pkgdata in pairs(pkglist) do
             if pname:find(packagename) ~= nil then
                 print(pname.."\t: "..pkgdata.description)
             end
