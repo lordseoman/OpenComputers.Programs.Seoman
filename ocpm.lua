@@ -78,6 +78,13 @@ function OCPM:parseArgs(...)
         self:install(args[2])
     elif args[1] == "search" then
         self:search(args[2])
+    elif args[1] == "forceocpm" then
+        local repo = self:getRepository("seoman")
+        if repo == nil then
+            print("You need to add the seoman repo first.")
+            return
+        end
+        self:download(repo.url .. "/ocpm.lua", "/usr/bin/ocpm.lua")
     end
 end
 
@@ -93,6 +100,14 @@ function OCPM:search(packagename)
             if pname:find(packagename) ~= nil then
                 print(pname.."\t: "..pkgdata.description)
             end
+        end
+    end
+end
+
+function OCPM:getRepository(name)
+    for repo in pairs(self.repos) do
+        if repo.name == name then
+            return repo
         end
     end
 end
