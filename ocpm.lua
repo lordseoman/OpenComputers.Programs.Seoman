@@ -42,7 +42,7 @@ function OCPM:setup()
     if not fs.exists('/etc/ocpm/packages') then
         fs.makeDirectory('/etc/ocpm/packages')
     end
-    if fs.exists('/etc/ocpm/repos.cfg') then
+    if fs.exists(self.repofilename) then
         self.repos = self:readfile(self.repofilename) or {}
     else
         self.repos = {}
@@ -50,9 +50,9 @@ function OCPM:setup()
 end
 
 function OCPM:readfile(filename)
-    local file, msg = io.open("/etc/ocpm/repos.cfg","rb")
+    local file, msg = io.open(filename,"rb")
     if not file then
-        io.stderr:write("Error while trying to read repos.cfg: "..msg)
+        io.stderr:write("Error while trying to read "..filename..": "..msg)
         return
     end
     local data = file:read("*a")
@@ -63,7 +63,7 @@ end
 function OCPM:savefile(filename, data)
     local file, msg = io.open(filename,"wb")
     if not file then
-        io.stderr:write("Error while trying to save repos.cfg: "..msg)
+        io.stderr:write("Error while trying to save "..filename..": "..msg)
         return
     end
     file:write(serial.serialize(data))
@@ -89,13 +89,14 @@ function OCPM:parseArgs(...)
 end
 
 function OCPM:search(packagename)
-    local fsList, errmsg = fs.list("/etc/ocpm/packages/")
+    local basedir = "/etc/ocpm/packages/"
+    local fsList, errmsg = fs.list(basedir)
     if fsList == nil then
         is.stderr:write("Error getting list of packages: "..errmsg)
         return
     end
     for plistFn in fsList do
-        pkglist = self:readfile(plistFn)
+        pkglist = self:readfile(basedir..plistFn)
         for pname, pkgdata in pairs(pkglist) do
             if pname:find(packagename) ~= nil then
                 print(pname.."\t: "..pkgdata.description)
