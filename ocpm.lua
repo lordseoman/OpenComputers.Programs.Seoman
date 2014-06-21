@@ -18,7 +18,9 @@ local term = require("term")
 local wget = loadfile("/bin/wget.lua")
 
 
-local OCPM = {}
+local OCPM = {
+  repofilename="/etc/ocpm/repos.cfg",
+}
 
 function OCPM:new(o)
     if type(o) == nil then
@@ -41,34 +43,57 @@ function OCPM:setup()
         fs.makeDirectory('/etc/ocpm/packages')
     end
     if fs.exists('/etc/ocpm/repos.cfg') then
-        local file, msg = io.open("/etc/ocpm/repos.cfg","rb")
-        if not file then
-            io.stderr:write("Error while trying to read repos.cfg: "..msg)
-            return
-        end
-        local data = file:read("*a")
-        file:close()
-        self.repos = serial.unserialize(data) or {}
+        self.repos = self:readfile(self.repofilename) or {}
     else
-        sel.repos = {}
+        self.repos = {}
     end
 end
 
-function OCPM:save()
-    local file, msg = io.open("/etc/ocpm/repos.cfg","wb")
+function OCPM:readfile(filename)
+    local file, msg = io.open("/etc/ocpm/repos.cfg","rb")
+    if not file then
+        io.stderr:write("Error while trying to read repos.cfg: "..msg)
+        return
+    end
+    local data = file:read("*a")
+    file:close()
+    return serial.unserialize(data) or {}
+end
+        
+function OCPM:savefile(filename, data)
+    local file, msg = io.open(filename,"wb")
     if not file then
         io.stderr:write("Error while trying to save repos.cfg: "..msg)
         return
     end
-    local data = serial.serialize(self.repos)
-    file:write(data)
+    file:write(serial.serialize(data))
     file:close()
 end
 
 function OCPM:parseArgs(...)
-    self.args, self.options = shell.parse(...)
-    if self.args[1] == "addrepo" then
-        self:addRepository(self.args[2], self.args[3])
+    args, self.options = shell.parse(...)
+    if args[1] == "addrepo" then
+        self:addRepository(args[2], args[3])
+    elif args[1] == "install" then
+        self:install(args[2])
+    elif args[1] == "search" then
+        self:search(args[2])
+    end
+end
+
+function OCPM:search(packagename)
+    local fsList, errmsg = fs.list("/etc/ocpm/packages/")
+    if fsList == nil then
+        is.stderr:write("Error getting list of packages: "..errmsg)
+        return
+    end
+    for plistFn in fsList do
+        pkglist = self:readfile(plistFn)
+        for pname, pkgdata in ipairs(pkglist) do
+            if pname:find(packagename) ~= nil then
+                print(pname.."\t: "..pkgdata.description)
+            end
+        end
     end
 end
 
@@ -83,7 +108,7 @@ function OCPM:addRepository(name, url)
     table.insert(self.repos, {name=name, url=url})
     print("Downloading package list: etc/ocpm/packages/"..name)
     self:download(url.."/packages.cfg", "/etc/ocpm/packages/"..name)
-    self:save()
+    self:savefile(self.repofilename)
 end
 
 function OCPM:getURL(url)
