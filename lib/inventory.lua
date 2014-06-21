@@ -1,16 +1,6 @@
 
-local sFunc
-do
-    local loadFunc, err = loadfile("simon/lib/functions.lua")
-    if type(loadFunc) == "function" then
-        sFunc = loadFunc()
-    else
-        print("Error loading (simons_functions) API: " .. err)
-        return
-    end
-end
-
-local dict = sFunc:require("dict")
+local dict = require("dict")
+local component = require("component")
 
 local Inv = { fake=false }
 
@@ -40,7 +30,7 @@ function Inv:setup(name)
         self.size = tonumber(name:sub(i+1))
         self.fake = true
     else
-        self.inv = peripheral.wrap(name)
+        self.inv = component.get(name)
         if self.inv == nil then
             error("Failed to find inventory: "..name)
         end
