@@ -41,7 +41,7 @@ function OCPM:setup()
         fs.makeDirectory('/etc/ocpm/packages')
     end
     if fs.exists('/etc/ocpm/repos.cfg') then
-        local file, msg = io.open("/etc/ocpm/repos.cfg,"rb")
+        local file, msg = io.open("/etc/ocpm/repos.cfg","rb")
         if not file then
             io.stderr:write("Error while trying to read repos.cfg: "..msg)
             return
@@ -49,6 +49,8 @@ function OCPM:setup()
         local data = file:read("*a")
         file:close()
         self.repos = serial.unserialize(data) or {}
+    else
+        sel.repos = {}
     end
 end
 
@@ -63,8 +65,8 @@ function OCPM:save()
     file:close()
 end
 
-function OCPM:parseArgs(args)
-    self.args, self.options = shell.parse(args)
+function OCPM:parseArgs(...)
+    self.args, self.options = shell.parse(...)
     if self.args[1] == "addrepo" then
         self:addRepository(self.args[2], self.args[3])
     end
@@ -79,7 +81,7 @@ function OCPM:addRepository(name, url)
     end
     print("Adding package repository: "..name)
     table.insert(self.repos, {name=name, url=url})
-    print("Downloading package list.")
+    print("Downloading package list: etc/ocpm/packages/"..name)
     self:download(url.."/packages.cfg", "/etc/ocpm/packages/"..name)
     self:save()
 end
@@ -104,6 +106,6 @@ function OCPM:download(url, path)
     end
 end
 
-ocpm = OCPM:{}
+ocpm = OCPM:new{}
 ocpm:setup()
 ocpm:parseArgs(...)
