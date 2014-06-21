@@ -15,7 +15,7 @@ if not fs.exists('/usr') then
   fs.makeDirectory('/usr/')
 end
 if not fs.exists('/usr/bin') then
-  print("Making /ust/bin/")
+  print("Making /usr/bin/")
   fs.makeDirectory('/usr/bin')
 end
 
