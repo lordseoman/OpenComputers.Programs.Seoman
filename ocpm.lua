@@ -105,7 +105,7 @@ function OCPM:search(packagename)
 end
 
 function OCPM:getRepository(name)
-    for repo in pairs(self.repos) do
+    for _, repo in ipairs(self.repos) do
         if repo.name == name then
             return repo
         end
@@ -113,7 +113,7 @@ function OCPM:getRepository(name)
 end
 
 function OCPM:addRepository(name, url)
-    for repo in pairs(self.repos) do
+    for _, repo in ipairs(self.repos) do
         if repo.name == name or repo.url == url then
             print("Repository alredy exists in list.")
             return
