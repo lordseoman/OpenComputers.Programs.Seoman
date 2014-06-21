@@ -74,17 +74,17 @@ function OCPM:parseArgs(...)
     args, self.options = shell.parse(...)
     if args[1] == "addrepo" then
         self:addRepository(args[2], args[3])
-    elif args[1] == "install" then
+    elseif args[1] == "install" then
         self:install(args[2])
-    elif args[1] == "search" then
+    elseif args[1] == "search" then
         self:search(args[2])
-    elif args[1] == "forceocpm" then
+    elseif args[1] == "forceocpm" then
         local repo = self:getRepository("seoman")
         if repo == nil then
             print("You need to add the seoman repo first.")
             return
         end
-        self:download(repo.url .. "/ocpm.lua", "/usr/bin/ocpm.lua")
+        self:download(repo.url .. "/ocpm.lua", "/usr/bin/ocpm.lua", true)
     end
 end
 
@@ -138,8 +138,8 @@ function OCPM:getURL(url)
     return sContent
 end
 
-function OCPM:download(url, path)
-    if self.options.f then
+function OCPM:download(url, path, force)
+    if force then
         wget("-fq", url, path)
     else
         wget("-q", url, path)
