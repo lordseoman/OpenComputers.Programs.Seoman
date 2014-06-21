@@ -7,4 +7,4 @@ in the overworld and the nexus.
 
 Install the package manager using:
 
-/# pastebin run jpSSvcci
+/# pastebin run xPzXgCmV
