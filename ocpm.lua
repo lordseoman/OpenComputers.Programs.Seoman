@@ -37,7 +37,51 @@ function OCPM:setup()
         io.stderr:write("This program requires an internet card to run.")
         return
     end
-    self.args, self.options = shell.parse(...)
+    if not fs.exists('/etc/ocpm/packages') then
+        fs.makeDirectory('/etc/ocpm/packages')
+    end
+    if fs.exists('/etc/ocpm/repos.cfg') then
+        local file, msg = io.open("/etc/ocpm/repos.cfg,"rb")
+        if not file then
+            io.stderr:write("Error while trying to read repos.cfg: "..msg)
+            return
+        end
+        local data = file:read("*a")
+        file:close()
+        self.repos = serial.unserialize(data) or {}
+    end
+end
+
+function OCPM:save()
+    local file, msg = io.open("/etc/ocpm/repos.cfg","wb")
+    if not file then
+        io.stderr:write("Error while trying to save repos.cfg: "..msg)
+        return
+    end
+    local data = serial.serialize(self.repos)
+    file:write(data)
+    file:close()
+end
+
+function OCPM:parseArgs(args)
+    self.args, self.options = shell.parse(args)
+    if self.args[1] == "addrepo" then
+        self:addRepository(self.args[2], self.args[3])
+    end
+end
+
+function OCPM:addRepository(name, url)
+    for repo in pairs(self.repos) do
+        if repo.name == name or repo.url == url then
+            print("Repository alredy exists in list.")
+            return
+        end
+    end
+    print("Adding package repository: "..name)
+    table.insert(self.repos, {name=name, url=url})
+    print("Downloading package list.")
+    self:download(url.."/packages.cfg", "/etc/ocpm/packages/"..name)
+    self:save()
 end
 
 function OCPM:getURL(url)
@@ -60,6 +104,6 @@ function OCPM:download(url, path)
     end
 end
 
-
 ocpm = OCPM:{}
 ocpm:setup()
+ocpm:parseArgs(...)
