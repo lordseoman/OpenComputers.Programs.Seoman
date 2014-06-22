@@ -107,7 +107,7 @@ function OCPM:search(packagename, exact)
     for plistFn in fsList do
         pkglist = self:readfile(basedir..plistFn)
         for pname, pkgdata in pairs(pkglist) do
-            if (exact and pname == packagename) or (not exact and pname:find(packagename) ~= nil then
+            if (exact and pname == packagename) or (not exact and pname:find(packagename) ~= nil) then
                 table.insert(pkgs, {repo=plistFn, pkg=pkgdata, pkgname=pname,}) 
             end
         end
