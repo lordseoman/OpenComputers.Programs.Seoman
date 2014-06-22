@@ -134,6 +134,7 @@ function OCPM:addRepository(name, url)
     table.insert(self.repos, {name=name, url=url})
     self:updatePackages(repo)
     self:savefile(self.repofilename)
+end
     
 function OCPM:updatePackages(repo)
     print("Downloading package list: etc/ocpm/packages/"..repo.name)
