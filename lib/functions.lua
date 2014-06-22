@@ -40,6 +40,15 @@ function extend(t1, t2)
 end
 rawset(table, "extend", extend)
 
+function rpad(s, length)
+    if #s < length then
+        return s .. " ":rep(length - #s)
+    else
+        return s:sub(1, length)
+    end
+end
+rawset(string, "rpad", rpad)
+
 function extend_new(t1, t2)
     result = {}
     for _, v1 in ipairs(t1) do

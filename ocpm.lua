@@ -79,8 +79,8 @@ function OCPM:parseArgs(...)
         self:install(args[2])
     elseif args[1] == "search" then
         local pkgs = self:search(args[2])
-        for pData in ipairs(pkgs) do
-            print(pData.pkgname.."\t: "..pData.pkg.description)  
+        for _, pData in ipairs(pkgs) do
+            print(pData.pkgname:rpad(15).."\t: "..pData.pkg.description)  
         end
     elseif args[1] == "update" then
         for _, repo in ipairs(self.repos) do
@@ -107,7 +107,9 @@ function OCPM:search(packagename, exact)
     for plistFn in fsList do
         pkglist = self:readfile(basedir..plistFn)
         for pname, pkgdata in pairs(pkglist) do
-            if (exact and pname == packagename) or (not exact and pname:find(packagename) ~= nil) then
+            if (packagename == nil) or ( 
+                (exact and pname == packagename) or (not exact and pname:find(packagename) ~= nil)
+                ) then
                 table.insert(pkgs, {repo=plistFn, pkg=pkgdata, pkgname=pname,}) 
             end
         end
@@ -138,7 +140,7 @@ end
     
 function OCPM:updatePackages(repo)
     print("Downloading package list: etc/ocpm/packages/"..repo.name)
-    self:download(repo.url.."/packages.cfg", "/etc/ocpm/packages/"..repo.name)
+    self:download(repo.url.."/packages.cfg", "/etc/ocpm/packages/"..repo.name, true)
 end
 
 function OCPM:install(packagename)
