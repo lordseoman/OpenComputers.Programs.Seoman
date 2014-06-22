@@ -20,6 +20,7 @@ local wget = loadfile("/bin/wget.lua")
 
 local OCPM = {
   repofilename="/etc/ocpm/repos.cfg",
+  install_basedir="/usr",
 }
 
 function OCPM:new(o)
@@ -77,7 +78,14 @@ function OCPM:parseArgs(...)
     elseif args[1] == "install" then
         self:install(args[2])
     elseif args[1] == "search" then
-        self:search(args[2])
+        local pkgs = self:search(args[2])
+        for pData in ipairs(pkgs) do
+            print(pData.pkgname.."\t: "..pData.pkg.description)  
+        end
+    elseif args[1] == "update" then
+        for _, repo in ipairs(self.repos) do
+            self:updatePackages(repo)
+        end
     elseif args[1] == "forceocpm" then
         local repo = self:getRepository("seoman")
         if repo == nil then
@@ -88,21 +96,23 @@ function OCPM:parseArgs(...)
     end
 end
 
-function OCPM:search(packagename)
+function OCPM:search(packagename, exact)
     local basedir = "/etc/ocpm/packages/"
     local fsList, errmsg = fs.list(basedir)
+    pkgs = {}
     if fsList == nil then
         is.stderr:write("Error getting list of packages: "..errmsg)
-        return
+        return pkgs
     end
     for plistFn in fsList do
         pkglist = self:readfile(basedir..plistFn)
         for pname, pkgdata in pairs(pkglist) do
-            if pname:find(packagename) ~= nil then
-                print(pname.."\t: "..pkgdata.description)
+            if (exact and pname == packagename) or (not exact and pname:find(packagename) ~= nil then
+                table.insert(pkgs, {repo=plistFn, pkg=pkgdata, pkgname=pname,}) 
             end
         end
     end
+    return pkgs
 end
 
 function OCPM:getRepository(name)
@@ -122,9 +132,39 @@ function OCPM:addRepository(name, url)
     end
     print("Adding package repository: "..name)
     table.insert(self.repos, {name=name, url=url})
-    print("Downloading package list: etc/ocpm/packages/"..name)
-    self:download(url.."/packages.cfg", "/etc/ocpm/packages/"..name)
+    self:updatePackages(repo)
     self:savefile(self.repofilename)
+    
+function OCPM:updatePackages(repo)
+    print("Downloading package list: etc/ocpm/packages/"..repo.name)
+    self:download(repo.url.."/packages.cfg", "/etc/ocpm/packages/"..repo.name)
+end
+
+function OCPM:install(packagename)
+    local pkglist = self:search(packagename, true)
+    if #pkglist == 0 then
+        print("No package by that name to install.")
+        return
+    end
+    local repo = self:getRepository(reponame[1].repo)
+    if repo == nil then
+        print("Repository config for package list is missing.")
+        return
+    end
+    print("Installing "..pkglist[1].pkgname)
+    for remoteFn, localPath in pairs(info.files) do
+        -- If the localPath is specified with '/' as the first character then don't
+        -- prepend the install_basedir
+        if localPath:find("^/") == nil then
+            localPath = fs.concat(self.install_basedir, localPath)
+        end
+        if not fs.exists(localPath) then
+            fs.makeDirectory(localPath)
+        end
+        -- Append the name of the file to localPath.
+        localPath = fs.concat(localPath, fs.name(remoteFn))
+        self:download(repo.url .. remotePath, localPath)
+    end
 end
 
 function OCPM:getURL(url)
