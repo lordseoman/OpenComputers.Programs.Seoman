@@ -156,7 +156,7 @@ function OCPM:install(packagename, update)
         return
     end
     print("Installing "..pkglist[1].pkgname)
-    for remoteFn, localPath in pairs(pkglist[1].files) do
+    for remoteFn, localPath in pairs(pkglist[1].pkg.files) do
         -- If the localPath is specified with '/' as the first character then don't
         -- prepend the install_basedir
         if localPath:find("^/") == nil then
