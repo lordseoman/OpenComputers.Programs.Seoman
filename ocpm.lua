@@ -76,11 +76,12 @@ function OCPM:parseArgs(...)
     if args[1] == "addrepo" then
         self:addRepository(args[2], args[3])
     elseif args[1] == "install" then
-        self:install(args[2])
+        self:install(args[2], true)
     elseif args[1] == "search" then
         local pkgs = self:search(args[2])
+        local pad = " "
         for _, pData in ipairs(pkgs) do
-            print(pData.pkgname:rpad(15).."\t: "..pData.pkg.description)  
+            print(pData.pkgname..pad:rep(16 - #pData.pkgname)..": "..pData.pkg.description)  
         end
     elseif args[1] == "update" then
         for _, repo in ipairs(self.repos) do
@@ -143,19 +144,19 @@ function OCPM:updatePackages(repo)
     self:download(repo.url.."/packages.cfg", "/etc/ocpm/packages/"..repo.name, true)
 end
 
-function OCPM:install(packagename)
+function OCPM:install(packagename, update)
     local pkglist = self:search(packagename, true)
     if #pkglist == 0 then
         print("No package by that name to install.")
         return
     end
-    local repo = self:getRepository(reponame[1].repo)
+    local repo = self:getRepository(pkglist[1].repo)
     if repo == nil then
         print("Repository config for package list is missing.")
         return
     end
     print("Installing "..pkglist[1].pkgname)
-    for remoteFn, localPath in pairs(info.files) do
+    for remoteFn, localPath in pairs(pkglist[1].files) do
         -- If the localPath is specified with '/' as the first character then don't
         -- prepend the install_basedir
         if localPath:find("^/") == nil then
@@ -166,7 +167,7 @@ function OCPM:install(packagename)
         end
         -- Append the name of the file to localPath.
         localPath = fs.concat(localPath, fs.name(remoteFn))
-        self:download(repo.url .. remotePath, localPath)
+        self:download(repo.url .. remoteFn, localPath, update)
     end
 end
 
