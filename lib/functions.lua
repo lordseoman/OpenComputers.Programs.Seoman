@@ -40,9 +40,14 @@ function extend(t1, t2)
 end
 rawset(table, "extend", extend)
 
-function rpad(s, length)
+function rpad(s, length, char)
+    if char == nil then 
+        char = " "
+    elseif #char > 1 then
+        char = char:sub(1, 1)
+    end
     if #s < length then
-        return s .. " ":rep(length - #s)
+        return s .. char:rep(length - #s)
     else
         return s:sub(1, length)
     end
