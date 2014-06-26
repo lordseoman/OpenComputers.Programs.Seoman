@@ -1,62 +1,82 @@
-
+--[[
+  This presents an Inventory object that wraps an OC component.
+--]]
 local dict = require("dict")
 local component = require("component")
 
-local Inv = { fake=false }
+local Inv = {}
 
-chests = dict:new{
+Inv._chests = dict:new{
     "iron", "silver", "copper", "gold", "diamond", "crystal",
     "ender_chest",
-    "container_chest",
+    "chest",
 }
 
+-- These allow oposites to be coded, pushItemIntoSlot and pullItemIntoSlot use
+-- string directions (ForgeDirection) and not ints.
 directions = dict:new{ 
     down="up", up="down", south="north", north="south", west="east", east="west" 
 }
 
-function Inv:new(name)
+function Inv:new(address)
     o = {}
     setmetatable(o, self)
     self.__index = self
-    o:setup(name)
+    o:setup(address)
     return o
 end
 
-function Inv:setup(name)
-    self.name = name
-    local i, j = name:find('_', -5)
-    if string.find(name, 'fake_') ~= nil then
-        self.inv = nil
-        self.size = tonumber(name:sub(i+1))
-        self.fake = true
+function Inv:setup(address)
+    -- A fake inventory should be used when one side of an Inventory pair
+    -- doesn't have an Adapter next to it. This means you can't pull or 
+    -- push from this inventory, BUT you can pushInto or pullFrom.
+    --
+    -- A fake inventory should have an address of fake_<>_X
+    -- Where <> is unique and X is the size of the inventory
+    if string.find(address, 'fake_') ~= nil then
+        local i, j = address:find('_', -5)
+        self.inv = { address=address, type="chest", }
+        self.size = tonumber(address:sub(i+1))
+        self.canTransfer = false
     else
-        self.inv = component.get(name)
-        if self.inv == nil then
-            error("Failed to find inventory: "..name)
+        -- Resolve a partial address to a full one that can be used with
+        -- proxy
+        address = component.get(address)
+        if address == nil then
+            error("Failed to resolve inventory/component: "..address)
         end
+        self.inv = component.proxy(address)
         self.size = self.inv.getInventorySize()
+        self.canTransfer = true
     end
     self.dir = {}
-    local pname = name:sub(1, i-1)
-    if (chests:contains(pname) or self.fake) then
+    if self._chests:contains(self.inv.type) then
         self.input = { min=1, max=self.size }
         self.output = { min=1, max=self.size }
+    -- AESU from GregTech
+    elseif self.inv.type == "gt_aesu" then
+        self.charge_slot = 1
+        self.discharge_slot = 2
     -- Apiary from Forestry
-    elseif pname == "apiculture" then
-       self.input = { min=1, max=2 }
-       self.output = { min=3, max=9 }
+    elseif self.inv.type == "apiculture_0" then
+        self.input = { min=1, max=2 }
+        self.output = { min=3, max=9 }
     -- Analyser from ExtraBees
-    elseif pname == "core" then
+    elseif self.inv.type == "core_0" then
         self.input = { min=1, max=6 }
         self.output = {min=9, max=12 }
     -- Inoculator
-    elseif pname == "peripheral" then
+    elseif self.inv.type == "extrabees_block_advgeneticmachine" then
         self.input = { min=4, max=9 }
         self.output = { min=10, max=15 }
         self.processing_slot = 3
         self.serum_slot = 16
+    -- Ender IO Capacitor
+    elseif self.inv.type = "blockcapacitorbank" then
+        self.input = { min=1, max=4 }
+        self.output = { min=1, max=4 }
     else
-        error("bugger "..pname)
+        error("Unknown inventory type: "..self.inv.type)
     end
 end
 
@@ -64,8 +84,8 @@ function Inv:setDirection(direction, target)
     if not directions:contains(direction) then
         error("Unknown direction: "..direction)
     end
-    self.dir[target.name] = direction
-    target.dir[self.name] = directions[direction]
+    self.dir[target.inv.address] = direction
+    target.dir[self.inv.address] = directions[direction]
 end
 
 function Inv:clearOutput(target)
@@ -78,61 +98,106 @@ function Inv:clearOutput(target)
     end
 end
 
+-- Can I combine
+function Inv:canCombine(source, target)
+    -- If there is nothing in the slot then we can put upto maxSize of
+    -- the source stack into the slot.
+    if target == nil then
+        return source.maxSize
+    end
+    -- If the stacks are not the same then nil
+    if not (source.id == target.id and source.damage == target.damage) then
+        return nil
+    end
+    -- If the slot has room return how much room it has
+    if target.maxSize > target.size then
+        return target.maxSize - target.size
+    end
+    -- Otherwise no room
+    return 0
+end
+
 -- Pull a stack from one inventory to another.
 --  - if `amount` is nil then the entire stack is pulled 
 function Inv:pullStack(stack, source, amount)
-    if self.fake then
-        error("Can't pullStack on a fake inventory.")
+    if not self.canTransfer then
+        error("Can't pullStack to this inventory: "..self.inv.type)
     end
-    if amount == nil or amount > stack.qty then 
-        amount = stack.qty
+    if amount == nil or amount > stack.size then 
+        amount = stack.size
     elseif amount < 1 then
         return
     end
     retList = {}
-    totalPulled = 0
     for slot=self.input.min, self.input.max do
-        pulled = self.inv.pullItemIntoSlot(self.dir[source.name], stack.slot, amount, slot)
-        if pulled > 0 then
-            print("pulled "..pulled.." "..self.dir[source.name])
+        local origStack = self.inv.getStackInSlot(slot)
+        local space = self:canCombine(stack, origStack)
+        if space and space > 0 then
+            local transfer = math.min(space, amount)
+            -- The response to pullItem is nil whether it works or not, so check
+            -- our slot to see if we got the stacks
+            self.inv.pullItemIntoSlot(self.dir[source.name], stack.slot, transfer, slot)
             newstack = self.inv.getStackInSlot(slot)
-            newstack.slot = slot
-            newstack.inventory = self
-            table.insert(retList, newstack)
-            totalPulled = totalPulled + pulled
-            amount = amount - pulled
+            if newstack == nil then
+                print("Failed to pull into slot "..slot)
+            else
+                local pulled = space - (newstack.maxSize - newstack.size)
+                if pulled > 0 then
+                    print("pulled "..pulled.." "..self.dir[source.name])
+                    newstack.slot = slot
+                    newstack.inventory = self
+                    table.insert(retList, newstack)
+                    amount = amount - pulled
+                end
+            end
+            if amount == 0 then
+                break
+            end
         end
-        if amount == 0 then
-            break
-        end
+    end
+    if amount > 0 then
+        print("Failed to transfer requested amount.")
     end
     return retList
 end
 
 function Inv:pushStack(stack, target, amount)
-    if amount == nil or amount > stack.qty then 
-        amount = stack.qty
+    if not self.canTransfer then
+        error("Can't pushStack from this inventory: "..self.inv.type)
+    end
+    if amount == nil or amount > stack.size then 
+        amount = stack.size
     elseif amount < 1 then
         return {}
     end
     retList = {}
-    totalPushed = 0
     for slot=target.input.min, target.input.max do
-        pushed = self.inv.pushItemIntoSlot(self.dir[target.name], stack.slot, amount, slot)
+        -- Have to push then check as OC always returns nil and an error but
+        -- it does actually work
+        self.inv.pushItemIntoSlot(self.dir[target.name], stack.slot, amount, slot)
+        local oldstack = self.inv.getStackInSlot(stack.slot)
+        if oldstack then
+            pushed = stack.size - oldstack.size
+            stack.size = oldstack.size
+        else
+            pushed = stack.size
+        end
         if pushed > 0 then
             print("pushed "..pushed.." ".. self.dir[target.name])
-            if not target.fake then
+            if target.canTransfer then
                 newstack = target.inv.getStackInSlot(slot)
                 newstack.slot = slot
                 newstack.inventory = target
                 table.insert(retList, newstack)
             end
-            totalPushed = totalPushed + pushed
             amount = amount - pushed
         end
         if amount == 0 then
             break
         end
+    end
+    if amount > 0 then
+        print("Failed to push amount requested.")
     end
     return retList
 end
