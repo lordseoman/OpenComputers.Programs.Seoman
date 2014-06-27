@@ -407,6 +407,12 @@ function Menu:setupDialog(dialog)
     if dialog.setup == true then
         return
     end
+    if dialog.text_colour == nil then
+        dialog.text_colour = self.text_colour
+    end
+    if dialog.background_colour == nil then
+        dialog.background_colour = self.background_colour
+    end
     --
     -- If the width of the dialog is not fixed then adjust it to fit the
     -- lines being shown
