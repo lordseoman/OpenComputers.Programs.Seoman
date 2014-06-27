@@ -350,27 +350,18 @@ function Menu:showDialog(dialog)
     self:setupDialog(dialog)
     --
     -- The offset is the upper left corner of the dialog
-    local xOffset = math.floor((self.windowSize[1] - dialog.width) / 2) + 1
-    local yOffset = math.floor((self.windowSize[2] - dialog.height) / 2) + 1
+    local xOffset = math.floor((self.windowSize[1] - dialog.width) / 2)
+    local yOffset = math.floor((self.windowSize[2] - dialog.height) / 2)
     --
     -- Now enter the write the lines to the screen and wait for input
     local result = dialog.result
     repeat
-        -- Clear the box area first
-        self.monitor.fill(xOffset, yOffset, dialog.width, dialog.height, " ")
-        -- Draw the top of box for the dialog
-        self.monitor.set(xOffset+1, yOffset+1, "+")
-        self.monitor.fill(xOffset+2, yOffset+1, dialog.width-4, 1, "-")
-        self.monitor.set(xOffset+dialog.width-1, yOffset+1, "+")
-        -- Copy the top to the bottom
-        self.monitor.copy(xOffset+1, yOffset+1, dialog.width-2, 1, 0, dialog.height-2)
-        -- And fill the sides
-        self.monitor.fill(xOffset+1, yOffset+2, 1, dialog.height-4, "|")
-        self.monitor.fill(xOffset+1, yOffset+dialog.width-1, 1, dialog.height-4, "|")
+        self:drawBox(dialog.width, dialog.height)
         -- Render the title inside the box
         self:renderItem({
+            -- The +3 is because of the gap between the inner_width and the xOffset
             x=xOffset + math.floor((dialog.inner_width-string.len(dialog.title))/2) + 3,
-            y=yOffset + 2,
+            y=yOffset + 1,
             width=string.len(dialog.title),
             ypad=0,
             xpad=0,
@@ -387,7 +378,7 @@ function Menu:showDialog(dialog)
                 else
                     button.x = xOffset + 3 + button.x
                 end
-                button.y = yOffset + dialog.height - 3
+                button.y = yOffset + dialog.height - 2
                 button.setup = true
             end
             self:renderItem(button)
@@ -442,9 +433,9 @@ function Menu:setupDialog(dialog)
     local count = 0
     for _, but in pairs(dialog.buttons) do count = count + 1 end
     if count > 0 then
-        dialog.height = dialog.inner_height + 8
+        dialog.height = dialog.inner_height + 6
     else
-        dialog.height = dialog.inner_height + 7
+        dialog.height = dialog.inner_height + 5
     end
     dialog.width = dialog.inner_width + 6
     dialog.setup = true

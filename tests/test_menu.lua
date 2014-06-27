@@ -30,7 +30,9 @@ if button then
 else
     m.monitor.set(5, 14, "Sorry, failed to get a button.")
 end
+event.pull("touch")
 
-m.monitor.fill(5, 10, 20, 10, " ")
+
+m.monitor.fill(5, 10, 40, 10, " ")
 m:showInfo()
 event.pull("touch")
