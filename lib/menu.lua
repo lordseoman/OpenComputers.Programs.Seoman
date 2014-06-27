@@ -118,16 +118,16 @@ function Menu:drawBox(width, height, fgcolour, bgcolour)
     local oldfgc = self.monitor.getForeground()
     local oldbgc = self.monitor.getBackground()
     -- The offset is the upper left corner of the window
-    local xOffset = math.floor((self.windowSize[1] - width) / 2) + 1
-    local yOffset = math.floor((self.windowSize[2] - height) / 2) + 1
-    -- If there is an offset then pad by 1
+    local xOffset = math.floor((self.windowSize[1] - width) / 2)
+    local yOffset = math.floor((self.windowSize[2] - height) / 2)
+    -- If there is an offset then pad by 1 and clear the area
+    self.monitor.setForeground(fgcolour)
+    self.monitor.setBackground(bgcolour)
     if xOffset > 1 then
         self.monitor.fill(xOffset-1, yOffset-1, width+2, height+2, " ")
     else
         self.monitor.fill(xOffset, yOffset, width, height, " ")
     end
-    self.monitor.setForeground(fgcolour)
-    self.monitor.setBackground(bgcolour)
     -- Top border
     self.monitor.set(xOffset, yOffset, '+')
     self.monitor.set(xOffset + width, yOffset, '+')
@@ -295,7 +295,7 @@ function Menu:showInfo()
 end
 
 function Menu:renderMainMenu()
-    local x, y = self.windowSize
+    local x, y = self.windowSize[1], self.windowSize[2]
     -- Clear the screen
     self.monitor.fill(1, 1, x, y, " ")
     --
