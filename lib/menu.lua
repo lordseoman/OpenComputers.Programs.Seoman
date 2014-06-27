@@ -133,7 +133,7 @@ function Menu:drawBox(width, height, fgcolour, bgcolour)
     self.monitor.set(xOffset+width-1, yOffset, '+')
     self.monitor.fill(xOffset + 1, yOffset, width-2, 1, '-')
     -- Copy this to the bottom
-    self.monitor.copy(xOffset, yOffset, width, 1, 0, height)
+    self.monitor.copy(xOffset, yOffset, width, 1, 0, height-1)
     -- Do the sides by filling
     self.monitor.fill(xOffset, yOffset+1, 1, height-2, "|")
     self.monitor.fill(xOffset+width-1, yOffset+1, 1, height-2, "|")
@@ -177,7 +177,7 @@ function Menu:renderItem(item)
         self.monitor.setForeground(item.text_colour)
     end
     self.monitor.fill(item.x, y, item.width, (item.ypad * 2) + 1, " ")
-    self.monitor.set(item.x, y, text)
+    self.monitor.set(item.x, y + item.ypad, text)
     -- Restore the text and background colours
     self.monitor.setForeground(self.text_colour)
     self.monitor.setBackground(self.background_colour)
