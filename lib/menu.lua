@@ -130,13 +130,13 @@ function Menu:drawBox(width, height, fgcolour, bgcolour)
     end
     -- Top border
     self.monitor.set(xOffset, yOffset, '+')
-    self.monitor.set(xOffset + width, yOffset, '+')
+    self.monitor.set(xOffset+width-1, yOffset, '+')
     self.monitor.fill(xOffset + 1, yOffset, width-2, 1, '-')
     -- Copy this to the bottom
     self.monitor.copy(xOffset, yOffset, width, 1, 0, height)
     -- Do the sides by filling
     self.monitor.fill(xOffset, yOffset+1, 1, height-2, "|")
-    self.monitor.fill(xOffset+width, yOffset+1, 1, height-2, "|")
+    self.monitor.fill(xOffset+width-1, yOffset+1, 1, height-2, "|")
     -- Restore the old fg and bg colours
     self.monitor.setForeground(oldfgc)
     self.monitor.setBackground(oldbgc)
