@@ -356,7 +356,7 @@ function Menu:showDialog(dialog)
     -- Now enter the write the lines to the screen and wait for input
     local result = dialog.result
     repeat
-        self:drawBox(dialog.width, dialog.height)
+        self:drawBox(dialog.width, dialog.height, dialog.text_colour, dialog.background_colour)
         -- Render the title inside the box
         self:renderItem({
             -- The +3 is because of the gap between the inner_width and the xOffset
