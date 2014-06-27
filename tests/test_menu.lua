@@ -4,6 +4,9 @@
  *
 --]]
 
+-- Add a forced clear of the packages
+package.loaded.menu = nil
+
 local event = require("event")
 local Menu = require("menu")
 
