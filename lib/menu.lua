@@ -389,7 +389,7 @@ function Menu:showDialog(dialog)
         local minNo = math.max(1, #dialog.lines - dialog.inner_height + 1)
         while i >= minNo do
             local x = xOffset + 3
-            local y = yOffset + 4 + i - minNo
+            local y = yOffset + 3 + i - minNo
             self.monitor.set(x, y, string.sub(dialog.lines[i], 1, dialog.inner_width))
             i = i - 1
         end
