@@ -87,11 +87,15 @@ function Menu:new(o)
     o.monitor = component.gpu
     o.monitor.setForeground(self.text_colour)
     o.monitor.setBackground(self.background_colour)
-    local x, y = o.monitor.getResolution()
-    o.monitor.fill(1, 1, x, y, " ")
-    o.windowSize = {x, y}
-    o.maxOptions = y - 8
-    o.maxLength = x - 6
+    if o.windowSize == nil then
+        local x, y = o.monitor.getResolution()
+        o.windowSize = {x, y}
+    else
+        o.monitor.setResolution(o.windowSize[1], o.windowSize[2])
+    end
+    o.monitor.fill(1, 1, o.windowSize[1], o.windowSize[2], " ")
+    o.maxOptions = o.windowSize[2] - 8
+    o.maxLength = o.windowSize[1] - 6
     return o
 end
 

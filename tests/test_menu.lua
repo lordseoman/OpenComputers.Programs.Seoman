@@ -7,7 +7,7 @@
 local event = require("event")
 local Menu = require("menu")
 
-m = Menu:new{title="A Testing Menu",}
+m = Menu:new{ title="A Testing Menu", windowSize={85, 40}, }
 
 m.monitor.fill(5, 5, 25, 25, "o")
 event.pull("touch")
@@ -27,3 +27,7 @@ if button then
 else
     m.monitor.set(5, 14, "Sorry, failed to get a button.")
 end
+
+m.monitor.fill(5, 10, 20, 10, " ")
+m:showInfo()
+event.pull("touch")
