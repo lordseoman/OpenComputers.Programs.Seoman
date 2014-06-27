@@ -72,7 +72,7 @@ function Inv:setup(address)
         self.processing_slot = 3
         self.serum_slot = 16
     -- Ender IO Capacitor
-    elseif self.inv.type = "blockcapacitorbank" then
+    elseif self.inv.type == "blockcapacitorbank" then
         self.input = { min=1, max=4 }
         self.output = { min=1, max=4 }
     else

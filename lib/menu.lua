@@ -8,8 +8,8 @@ local component = require("component")
 local term = require("term")
 
 local colours = {
-    white=0x000000,
-    black=0xFFFFFF,
+    white=0xFFFFFF,
+    black=0x000000,
     blue=0x0000FF,
     red=0xFF0000,
     green=0x00FF00,
@@ -113,6 +113,35 @@ function Menu:findClickXY(buttons, x, y)
     end
 end
 
+function Menu:drawBox(width, height, fgcolour, bgcolour)
+    -- Save the foreground and background colour
+    local oldfgc = self.monitor.getForeground()
+    local oldbgc = self.monitor.getBackground()
+    -- The offset is the upper left corner of the window
+    local xOffset = math.floor((self.windowSize[1] - width) / 2) + 1
+    local yOffset = math.floor((self.windowSize[2] - height) / 2) + 1
+    -- If there is an offset then pad by 1
+    if xOffset > 1 then
+        self.monitor.fill(xOffset-1, yOffset-1, width+2, height+2, " ")
+    else
+        self.monitor.fill(xOffset, yOffset, width, height, " ")
+    end
+    self.monitor.setForeground(fgcolour)
+    self.monitor.setBackground(bgcolour)
+    -- Top border
+    self.monitor.set(xOffset, yOffset, '+')
+    self.monitor.set(xOffset + width, yOffset, '+')
+    self.monitor.fill(xOffset + 1, yOffset, width-2, 1, '-')
+    -- Copy this to the bottom
+    self.monitor.copy(xOffset, yOffset, width, 1, 0, height)
+    -- Do the sides by filling
+    self.monitor.fill(xOffset, yOffset+1, 1, height-2, "|")
+    self.monitor.fill(xOffset+width, yOffset+1, 1, height-2, "|")
+    -- Restore the old fg and bg colours
+    self.monitor.setForeground(oldfgc)
+    self.monitor.setBackground(oldbgc)
+end
+
 -- Get the buttons that exist in this Y position
 function Menu:getButtons(ypos)
     local xpos = nil
@@ -147,15 +176,8 @@ function Menu:renderItem(item)
     if item.text_colour ~= nil then
         self.monitor.setForeground(item.text_colour)
     end
-    for i=1, item.ypad do
-        self.monitor.fill(item.x, y, " ", item.width)
-        y = y + 1
-    end
+    self.monitor.fill(item.x, y, item.width, (item.ypad * 2) + 1, " ")
     self.monitor.set(item.x, y, text)
-    for i=1, item.ypad do
-        y = y + 1
-        self.monitor.fill(item.x, y, " ", item.width)
-    end
     -- Restore the text and background colours
     self.monitor.setForeground(self.text_colour)
     self.monitor.setBackground(self.background_colour)
@@ -220,6 +242,7 @@ function Menu:showHelp()
                 text="CLOSE", 
                 text_colour=colours.yellow,
                 background_colour=colours.red,
+            },
         },
     })
 end
@@ -243,6 +266,7 @@ function Menu:showStatus()
                 text="CLOSE", 
                 text_colour=colours.yellow,
                 background_colour=colours.red,
+            },
         },
     })
 end
@@ -265,6 +289,7 @@ function Menu:showInfo()
                 text="CLOSE", 
                 text_colour=colours.yellow,
                 background_colour=colours.red,
+            },
         },
     })
 end
@@ -420,6 +445,8 @@ function Menu:setupDialog(dialog)
     dialog.width = dialog.inner_width + 6
     dialog.setup = true
 end	
+
+Menu.hexcolours = colours
 
 return Menu
 
