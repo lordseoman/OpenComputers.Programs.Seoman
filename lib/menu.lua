@@ -4,6 +4,8 @@
  *
 --]]
 
+require("functions")
+
 local component = require("component")
 local term = require("term")
 
@@ -33,6 +35,7 @@ local Menu = {
             ypad=1,
             text_colour=colours.white,
             background_colour=colours.blue,
+            callback=function(menu, button) return menu:showHelp() end
         },
         status={
             text="Status",
@@ -41,6 +44,16 @@ local Menu = {
             ypad=1,
             text_colour=colours.white,
             background_colour=colours.blue,
+            callback=function(menu, button) return menu:showStatus() end
+        },
+        sleep={
+            text="Sleep",
+            y=-2,    --bottom
+            xpad=2,
+            ypad=1,
+            text_colour=colours.white,
+            background_colour=colours.blue,
+            callback=function(menu, button) return menu:sleep() end
         },
         info={
             text="Info",
@@ -49,6 +62,7 @@ local Menu = {
             ypad=1,
             text_colour=colours.white,
             background_colour=colours.blue,
+            callback=function(menu, button) return menu:showInfo() end
         },
         exit={
             text="EXIT",
@@ -57,6 +71,7 @@ local Menu = {
             ypad=1,
             text_colour=colours.white,
             background_colour=colours.red,
+            callback=function(menu, button) return menu:shutdown() end
         },
     },
     monitor=nil,
@@ -66,6 +81,8 @@ local Menu = {
         min=1,
     },
     debug=false,
+    isShutdown=false,
+    isAsleep=false,
 }
 
 function Menu:new(o)
@@ -239,13 +256,12 @@ function Menu:showHelp()
         timeout=0, 
         buttons={
             close={
-                x=-5,
-                width=5,
                 ypad=0,
                 xpad=0,
                 text="CLOSE", 
                 text_colour=colours.yellow,
                 background_colour=colours.red,
+                results=true,
             },
         },
     })
@@ -263,17 +279,41 @@ function Menu:showStatus()
         timeout=0, 
         buttons={
             close={
-                x=-5,
-                width=5,
                 ypad=0,
                 xpad=0,
                 text="CLOSE", 
                 text_colour=colours.yellow,
                 background_colour=colours.red,
+                results=true,
             },
         },
     })
 end
+
+-- Put the screen to sleep
+function Menu:sleep()
+    self.monitor.fill(2, 3, self.windowSize[1]-2, self.windowSize[2]-6, " ")
+    self:showDialog({
+        title="Gone To Sleep", 
+        lines={
+            "This display has gone to sleep, to wake me up",
+            "just click on the button below.",
+            "Even asleep, I will be processing background",
+            "tasks.",
+        },
+        timeout=0, 
+        buttons={
+            wakeup={
+                ypad=1,
+                xpad=1,
+                text="WAKE UP", 
+                text_colour=colours.yellow,
+                background_colour=colours.red,
+                result=true,
+            },
+        },
+    })
+end    
 
 function Menu:showInfo()
     self:showDialog({
@@ -286,16 +326,34 @@ function Menu:showInfo()
         timeout=0, 
         buttons={
             close={
-                x=-5,
-                width=5,
                 ypad=0,
                 xpad=0,
                 text="CLOSE", 
                 text_colour=colours.yellow,
                 background_colour=colours.red,
+                result=true,
             },
         },
     })
+end
+
+function myMenu:shutdown(msg)
+    if msg == nil then msg = "Quiting" end
+    -- Show the closing dialog
+    self:showDialog({
+        title="Shutdown",
+        lines={msg.." . Goodbye",},
+        timeout=4,
+        buttons={},
+    })
+    -- reset the monitor colours
+    self.monitor.setBackground(colours.black)
+    self.monitor.setForegrount(colours.white)
+    self.monitor.fill(1, 1, self.windowSize[1], self.windowSize[2], " ")
+    self.monitor.set(1,5, "Thankyou, please come again.")
+    --
+    self.isShutdown = true
+    return true
 end
 
 function Menu:renderMainMenu()
@@ -374,9 +432,11 @@ function Menu:showDialog(dialog)
         for _, button in pairs(dialog.buttons) do
             if button.setup ~= true then
                 if button.x < 0 then
-                    button.x = xOffset + dialog.inner_width + 3 + button.x
-                else
+                    button.x = xOffset + dialog.width - 3 + button.x
+                elseif button.x ~= nil then
                     button.x = xOffset + 3 + button.x
+                else
+                    button.x = xOffset + ((dialog.width - string.len(button.text))/2)
                 end
                 button.y = yOffset + dialog.height - 2
                 button.setup = true
@@ -399,8 +459,46 @@ function Menu:showDialog(dialog)
     until result == true
 end
 
-function Menu:selectOption(dialog)
-    return true
+function Menu:selectOption(dialog, sleepTimer)
+    -- If the dialog doesn't specify events, then use "touch"
+    local waitForEvents = { "touch", }
+    if dialog.event then waitForEvents = dialog.events end
+    -- If the sleep timer should be active (usually only from renderMainMenu)
+    local timerId = nil
+    if sleepTimer and not dialog.timeout then
+        timerId = event.timer(sleepTimer, function () self:sleep() end)
+    end
+    while true do
+        local args
+        if dialog.timeout then
+            args = { event.pull(dialog.timeout, nil) }
+        else
+            args = { event.pull(nil) }
+        end
+        -- Returns nil if the timeout is triggered.
+        if args[1] == nil then
+            return true
+        -- See if the event is one we are waiting for
+        elseif table.contains(waitForEvents, args[1]) then
+            -- Handle specific events
+            if args[1] == 'touch' then
+                button = self:findClickXY(dialog.buttons, args[3], args[4]))
+                if button then
+                    if timerId then
+                        event.cancel(timerId)
+                    end
+                    if button.result then
+                        return button.result
+                    elseif button.callback then
+                        return button.callback(self, button)
+                    else
+                        return button
+                    end
+                end
+            end
+        end
+    end
+    error("Should never get to here")
 end
 
 function Menu:setupDialog(dialog)
@@ -446,6 +544,13 @@ function Menu:setupDialog(dialog)
     dialog.width = dialog.inner_width + 6
     dialog.setup = true
 end	
+
+function Menu:run()
+    repeat
+        self:renderMainMenu()
+        self:selectOption({buttons=self.buttons}, true)
+    until self.isShutdown
+end
 
 Menu.hexcolours = colours
 

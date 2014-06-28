@@ -32,7 +32,8 @@ else
 end
 event.pull("touch")
 
-
 m.monitor.fill(5, 10, 40, 10, " ")
 m:showInfo()
 event.pull("touch")
+
+m:run()
