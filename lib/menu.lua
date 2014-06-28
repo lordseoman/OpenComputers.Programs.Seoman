@@ -84,6 +84,7 @@ local Menu = {
     debug=false,
     isShutdown=false,
     isAsleep=false,
+    sleepTimer=20,
 }
 
 function Menu:new(o)
@@ -538,7 +539,7 @@ end
 function Menu:run()
     repeat
         self:renderMainMenu()
-        self:selectOption({buttons=self.buttons}, true)
+        self:selectOption({buttons=self.buttons}, self.sleepTimer)
     until self.isShutdown
 end
 
