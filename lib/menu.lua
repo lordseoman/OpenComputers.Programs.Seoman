@@ -8,6 +8,7 @@ require("functions")
 
 local component = require("component")
 local term = require("term")
+local event = require("event")
 
 local colours = {
     white=0xFFFFFF,
@@ -429,7 +430,7 @@ function Menu:showDialog(dialog)
         --
         -- Now draw the buttons on the bottom inside the box
         for _, button in pairs(dialog.buttons) do
-            self:setupItem(button, xOffset+1, yOffset+dialog.height-1, dialog.width-2)
+            self:setupItem(button, xOffset+1, yOffset+dialog.height-2, dialog.width-2)
             self:renderItem(button)
         end
         --
