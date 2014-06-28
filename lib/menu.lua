@@ -431,12 +431,12 @@ function Menu:showDialog(dialog)
         -- Now draw the buttons on the bottom inside the box
         for _, button in pairs(dialog.buttons) do
             if button.setup ~= true then
-                if button.x ~= nil then
-                    button.x = xOffset + 3 + button.x
+                if button.x == nil then
+                    button.x = xOffset + ((dialog.width - string.len(button.text))/2)
                 elseif button.x < 0 then
                     button.x = xOffset + dialog.width - 3 + button.x
                 else
-                    button.x = xOffset + ((dialog.width - string.len(button.text))/2)
+                    button.x = xOffset + 3 + button.x
                 end
                 button.y = yOffset + dialog.height - 2
                 button.setup = true
