@@ -432,7 +432,7 @@ function Menu:showDialog(dialog)
             if button.setup ~= true then
                 if button.width == nil then button.width = string.len(button.text) end
                 if button.x == nil then
-                    button.x = xOffset + (dialog.width - button.width)/2)
+                    button.x = xOffset + ((dialog.width - button.width)/2)
                 elseif button.x < 0 then
                     button.x = xOffset + dialog.width - 3 + button.x
                 else
