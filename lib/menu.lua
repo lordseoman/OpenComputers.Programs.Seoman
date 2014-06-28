@@ -180,8 +180,6 @@ end
 -- Render a string/button on the screen based on options in `item`
 --
 function Menu:renderItem(item)
-    if item.xpad == nil then item.xpad = 0 end
-    if item.ypad == nil then item.ypad = 0 end
     if item.background_colour ~= nil then
         self.monitor.setBackground(item.background_colour)
     end
@@ -361,16 +359,18 @@ function Menu:renderMainMenu()
     self.monitor.fill(1, 1, x, y, " ")
     --
     -- Write the title in the middle top line
-    self:renderItem({
-        x=math.floor((x-string.len(self.title))/2),
-        y=1,
-        width=string.len(self.title),
-        ypad=0,
-        xpad=0,
-        text=self.title, 
-        text_colour=colours.yellow,
-        background_colour=self.background_colour,
-    })
+    if type(self.title) == "string" then
+        self.title = {
+            y=1,
+            ypad=0,
+            xpad=0,
+            text=self.title, 
+            text_colour=colours.yellow,
+            background_colour=self.background_colour,
+        }
+    end
+    self:setupItem(self.title, 1, 1, x)
+    self:renderItem(self.title)
     --
     -- The menu border comes next
     self.monitor.setForeground(colours.red)
@@ -385,7 +385,7 @@ function Menu:renderMainMenu()
     self.monitor.fill(x, 3, 1, y-6, "|")
     --
     -- Write the buttons on the bottom of the screen
-    local buttons = self:getButtons(-2)
+    local buttons = self:getButtons(-1)
     local width = math.floor((x - 4 - (2 * #buttons)) / #buttons)
     local xpos = 4
     for _, but in pairs(buttons) do
