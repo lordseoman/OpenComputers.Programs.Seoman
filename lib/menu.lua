@@ -408,7 +408,7 @@ function Menu:showDialog(dialog)
     end
     self:setupDialog(dialog)
     --
-    -- The offset is the upper left corner of the dialog
+    -- The offset is the upper left corner of the dialog frame
     local xOffset = math.floor((self.windowSize[1] - dialog.width) / 2)
     local yOffset = math.floor((self.windowSize[2] - dialog.height) / 2)
     --
@@ -417,17 +417,15 @@ function Menu:showDialog(dialog)
     repeat
         self:drawBox(dialog.width, dialog.height, dialog.text_colour, dialog.background_colour)
         -- Render the title inside the box
-        self:renderItem({
-            -- The +3 is because of the gap between the inner_width and the xOffset
-            x=xOffset + math.floor((dialog.inner_width-string.len(dialog.title))/2) + 3,
-            y=yOffset + 1,
-            width=string.len(dialog.title),
+        title = {
             ypad=0,
             xpad=0,
             text=dialog.title, 
             text_colour=colours.yellow,
             background_colour=self.background_colour,
-        })
+        }
+        self:setupItem(title, xOffset+1, yOffset+1, dialog.width-2)
+        self:renderItem(title)
         --
         -- Now draw the buttons on the bottom inside the box
         for _, button in pairs(dialog.buttons) do
