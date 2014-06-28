@@ -30,7 +30,7 @@ local Menu = {
         -- buttons on the bottom of the screen
         help={
             text="Help",
-            y=-2,    --bottom
+            y=-1,    --bottom
             xpad=2,
             ypad=1,
             text_colour=colours.white,
@@ -39,7 +39,7 @@ local Menu = {
         },
         status={
             text="Status",
-            y=-2,    --bottom
+            y=-1,    --bottom
             xpad=2,
             ypad=1,
             text_colour=colours.white,
@@ -48,7 +48,7 @@ local Menu = {
         },
         sleep={
             text="Sleep",
-            y=-2,    --bottom
+            y=-1,    --bottom
             xpad=2,
             ypad=1,
             text_colour=colours.white,
@@ -57,7 +57,7 @@ local Menu = {
         },
         info={
             text="Info",
-            y=-2,    --bottom
+            y=-1,    --bottom
             xpad=2,
             ypad=1,
             text_colour=colours.white,
@@ -66,7 +66,7 @@ local Menu = {
         },
         exit={
             text="EXIT",
-            y=-2,    --bottom
+            y=-1,    --bottom
             xpad=2,
             ypad=1,
             text_colour=colours.white,
@@ -126,10 +126,8 @@ function Menu:findClickXY(buttons, x, y)
             print(button.width)
             print(x..":"..y)
         end
-        if (y >= (button.y - button.ypad)) and (y <= (button.y + button.ypad)) then
-            if x >= button.x and x <= (button.x + button.width) then
-                return button
-            end
+        if (y >= button.y) and (y <= button.dy) and (x >= button.x) and (x <= button.dx) then
+            return button
         end
     end
 end
@@ -184,21 +182,14 @@ end
 function Menu:renderItem(item)
     if item.xpad == nil then item.xpad = 0 end
     if item.ypad == nil then item.ypad = 0 end
-
-    local text = item.text
-    if item.xpad > 0 then
-        text = string.rep(" ", item.xpad) .. item.text .. string.rep(" ", item.xpad)
-    end
-    local y = item.y - item.ypad
-
     if item.background_colour ~= nil then
         self.monitor.setBackground(item.background_colour)
     end
     if item.text_colour ~= nil then
         self.monitor.setForeground(item.text_colour)
     end
-    self.monitor.fill(item.x, y, item.width, (item.ypad * 2) + 1, " ")
-    self.monitor.set(item.x, y + item.ypad, text)
+    self.monitor.fill(item.x, item.y, item.dx, item.dy, " ")
+    self.monitor.set(item.x, item.y, item.text)
     -- Restore the text and background colours
     self.monitor.setForeground(self.text_colour)
     self.monitor.setBackground(self.background_colour)
@@ -207,23 +198,36 @@ end
 -- A Button contains text and the state of the button determines the colour
 -- padding and position
 --
-function Menu:setupItem(item, xpos, width)
+function Menu:setupItem(item, xpos, ypos, width)
     if item.setup == true then
         return
     end
     --
-    -- A missing width means center it on the line, minus 6 for the borders
-    if width == nil then 
-        width = self.windowSize[1] - 6 
+    -- Figure out the width of the button
+    if item.width == nil then
+        item.width = string.len(item.text)
+    elseif item.width > string.len(item.text) then
+        error("Item "..item.text.." is too wide; "..item.width.." for area.")
+    end
+    --
+    -- A missing x value means center it within 'width'
+    if item.x == nil then
+        item.x = xpos + math.floor((width - item.width)/2)
+    elseif item.x < 0 then
+        item.x = xpos + width + item.x
+    else
+        item.x = xpos + item.x
     end
     --
     -- xpad true mean the button width is the whole area, grow to cover
     if item.xpad == true then
-        item.xpad = math.floor((width - string.len(but.text)) / 2)
+        item.xpad = math.floor((width - item.width) / 2)
     -- default the padding to 2
     elseif item.xpad == nil then
         item.xpad = 2
     end
+    item.x = item.x - item.xpad
+    item.dx = item.x + (item.xpad * 2) + item.width
     if item.ypad == nil then
         item.ypad = 0
     end
@@ -231,15 +235,10 @@ function Menu:setupItem(item, xpos, width)
     if item.y == nil then
         item.y = ypos
     elseif item.y < 0 then
-        item.y = self.windowSize[2] + 1 + item.y
+        item.y = ypos + item.y
     end
-    --
-    -- Figure out the width of the button
-    item.width = string.len(item.text) + (2 * item.xpad)
-    if item.width > width then
-        error("Item "..item.text.." is too wide; "..item.width.." for area.")
-    end
-    item.x = xpos + math.floor((width - item.width)/2)
+    item.y = item.y - item.ypad
+    item.dy = item.y + 1 + (item.ypad * 2)
     --
     -- record as setup
     item.setup = true
@@ -390,7 +389,7 @@ function Menu:renderMainMenu()
     local width = math.floor((x - 4 - (2 * #buttons)) / #buttons)
     local xpos = 4
     for _, but in pairs(buttons) do
-        self:setupItem(but, xpos, width)
+        self:setupItem(but, xpos, y, width)
         self:renderItem(but)
         xpos = xpos + width + 2
     end
