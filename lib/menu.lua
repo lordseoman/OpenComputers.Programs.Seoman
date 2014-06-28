@@ -429,18 +429,7 @@ function Menu:showDialog(dialog)
         --
         -- Now draw the buttons on the bottom inside the box
         for _, button in pairs(dialog.buttons) do
-            if button.setup ~= true then
-                if button.width == nil then button.width = string.len(button.text) end
-                if button.x == nil then
-                    button.x = xOffset + ((dialog.width - button.width)/2)
-                elseif button.x < 0 then
-                    button.x = xOffset + dialog.width - 3 + button.x
-                else
-                    button.x = xOffset + 3 + button.x
-                end
-                button.y = yOffset + dialog.height - 2
-                button.setup = true
-            end
+            self:setupItem(button, xOffset+1, yOffset+dialog.height-1, dialog.width-2)
             self:renderItem(button)
         end
         --
