@@ -337,7 +337,7 @@ function Menu:showInfo()
     })
 end
 
-function myMenu:shutdown(msg)
+function Menu:shutdown(msg)
     if msg == nil then msg = "Quiting" end
     -- Show the closing dialog
     self:showDialog({
@@ -431,10 +431,10 @@ function Menu:showDialog(dialog)
         -- Now draw the buttons on the bottom inside the box
         for _, button in pairs(dialog.buttons) do
             if button.setup ~= true then
-                if button.x < 0 then
-                    button.x = xOffset + dialog.width - 3 + button.x
-                elseif button.x ~= nil then
+                if button.x ~= nil then
                     button.x = xOffset + 3 + button.x
+                elseif button.x < 0 then
+                    button.x = xOffset + dialog.width - 3 + button.x
                 else
                     button.x = xOffset + ((dialog.width - string.len(button.text))/2)
                 end
@@ -482,7 +482,7 @@ function Menu:selectOption(dialog, sleepTimer)
         elseif table.contains(waitForEvents, args[1]) then
             -- Handle specific events
             if args[1] == 'touch' then
-                button = self:findClickXY(dialog.buttons, args[3], args[4]))
+                button = self:findClickXY(dialog.buttons, args[3], args[4])
                 if button then
                     if timerId then
                         event.cancel(timerId)
