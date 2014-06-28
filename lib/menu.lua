@@ -188,7 +188,7 @@ function Menu:renderItem(item)
     if item.text_colour ~= nil then
         self.monitor.setForeground(item.text_colour)
     end
-    self.monitor.fill(item.x, item.y, item.dx, item.dy, " ")
+    self.monitor.fill(item.x, item.y, item.dx - item.x, item.dy - item.y, " ")
     self.monitor.set(item.x + item.xpad, item.y + item.ypad, item.text)
     -- Restore the text and background colours
     self.monitor.setForeground(self.text_colour)
