@@ -240,7 +240,7 @@ function Menu:setupItem(item, xpos, ypos, width)
     elseif item.y < 0 then
         item.y = ypos + item.y
     end
-    item.y = item.y - item.ypad
+    item.y = item.y - (2 * item.ypad)
     item.dy = item.y + 1 + (item.ypad * 2)
     --
     -- record as setup
