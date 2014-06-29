@@ -12,13 +12,17 @@ local Menu = require("menu")
 
 m = Menu:new{ title="A Testing Menu", windowSize={85, 40}, }
 
+m.monitor.set(5, 35, "Click anywhere to continue.")
 m.monitor.fill(5, 5, 25, 25, "o")
 event.pull("touch")
 
+m.monitor.fill(5, 10, m.windowSize[1]-5, m.windowSize[2]-5, " ")
 m:drawBox(30, 30, m.hexcolours.blue, m.hexcolours.magenta)
+m.monitor.set(5, 40, "Click anywhere to continue.")
 event.pull("touch")
 
 m:renderMainMenu()
+m.monitor.set(5, 15, "Click anywhere to continue.")
 event.pull("touch")
 
 m.monitor.set(5, 10, "Click a button")
@@ -30,10 +34,12 @@ if button then
 else
     m.monitor.set(5, 14, "Sorry, failed to get a button.")
 end
+m.monitor.set(5, 15, "Click anywhere to continue.")
 event.pull("touch")
 
-m.monitor.fill(5, 10, 40, 10, " ")
+-- This renders the dialog and waits for input, so no need to wait
+m.monitor.fill(5, 10, m.windowSize[1]-5, m.windowSize[2]-5, " ")
 m:showInfo()
-event.pull("touch")
 
+-- Now run the menu
 m:run()
