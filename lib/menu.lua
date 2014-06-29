@@ -400,7 +400,7 @@ function Menu:renderMainMenu()
     end
     local width = math.floor((x - 4)/#buttons)
     local xpos = 2
-    for _, but in pairs(buttons) do
+    for _, but in ipairs(buttons) do
         self:setupItem(but, xpos, y, width)
         self:renderItem(but)
         xpos = xpos + width
@@ -438,7 +438,7 @@ function Menu:showDialog(dialog)
         self:renderItem(title)
         --
         -- Now draw the buttons on the bottom inside the box
-        for _, button in pairs(dialog.buttons) do
+        for _, button in ipairs(dialog.buttons) do
             self:setupItem(button, xOffset+1, yOffset+dialog.height-2, dialog.width-2)
             self:renderItem(button)
         end
