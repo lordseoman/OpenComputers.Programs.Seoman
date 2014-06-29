@@ -30,45 +30,41 @@ local Menu = {
     background_colour=colours.black,
     buttons={
         -- buttons on the bottom of the screen
-        help={
+        {
             text="Help",
-            y=-1,    --bottom
+            y=0,    --bottom
             xpad=2,
             ypad=1,
             text_colour=colours.white,
             background_colour=colours.blue,
             callback=function(menu, button) return menu:showHelp() end
-        },
-        status={
+        },{
             text="Status",
-            y=-1,    --bottom
+            y=0,    --bottom
             xpad=2,
             ypad=1,
             text_colour=colours.white,
             background_colour=colours.blue,
             callback=function(menu, button) return menu:showStatus() end
-        },
-        sleep={
+        },{
             text="Sleep",
-            y=-1,    --bottom
+            y=0,    --bottom
             xpad=2,
             ypad=1,
             text_colour=colours.white,
-            background_colour=colours.blue,
+            background_colour=colours.green,
             callback=function(menu, button) return menu:sleep() end
-        },
-        info={
+        },{
             text="Info",
-            y=-1,    --bottom
+            y=0,    --bottom
             xpad=2,
             ypad=1,
             text_colour=colours.white,
             background_colour=colours.blue,
             callback=function(menu, button) return menu:showInfo() end
-        },
-        exit={
+        },{
             text="EXIT",
-            y=-1,    --bottom
+            y=0,    --bottom
             xpad=2,
             ypad=1,
             text_colour=colours.white,
@@ -121,7 +117,7 @@ end
 
 -- Find if a button has been clicked
 function Menu:findClickXY(buttons, x, y)
-    for _, button in pairs(buttons) do
+    for _, button in ipairs(buttons) do
         if self.debug then
             print(_)
             print(button.x..":"..button.y)
@@ -171,8 +167,8 @@ function Menu:getButtons(ypos)
         xpos, ypos = term.getCursor()
     end
     local retArray = {}
-    for _, button in pairs(self.buttons) do
-        if button.y == ypos then
+    for _, button in ipairs(self.buttons) do
+        if (button.y >= ypos) and (button.dy == nil or button.dy < ypos) then
             table.insert(retArray, button)
 --            table.insert(retArray, table.copy(button))
         end
@@ -239,6 +235,8 @@ function Menu:setupItem(item, xpos, ypos, width)
         item.y = ypos
     elseif item.y < 0 then
         item.y = ypos + item.y
+    else
+        item.y = ypos
     end
     item.y = item.y - (2 * item.ypad)
     item.dy = item.y + (item.ypad * 2) + 1
@@ -393,9 +391,9 @@ function Menu:renderMainMenu()
     self.monitor.fill(x, 3, 1, y-6, "|")
     --
     -- Write the buttons on the bottom of the screen
-    local buttons = self:getButtons(y-2)
+    local buttons = self:getButtons(y)
     if #buttons == 0 then
-        buttons = self:getButtons(-1)
+        buttons = self:getButtons(0)
     end
     local width = math.floor((x - 4)/#buttons)
     local xpos = 2
