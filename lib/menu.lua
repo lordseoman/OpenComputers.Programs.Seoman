@@ -119,6 +119,7 @@ end
 function Menu:findClickXY(buttons, x, y)
     if self.debug then
         self.monitor.set(10, self.windowSize[2]-4, "Click at "..x..","..y..":")
+    end
     for _, button in ipairs(buttons) do
         if self.debug then
             message = string.format(
