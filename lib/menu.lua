@@ -263,7 +263,7 @@ function Menu:showHelp()
                 text="CLOSE", 
                 text_colour=colours.yellow,
                 background_colour=colours.red,
-                results=true,
+                result=true,
             },
         },
     })
@@ -286,7 +286,7 @@ function Menu:showStatus()
                 text="CLOSE", 
                 text_colour=colours.yellow,
                 background_colour=colours.red,
-                results=true,
+                result=true,
             },
         },
     })
