@@ -240,7 +240,7 @@ function Menu:setupItem(item, xpos, ypos, width)
     elseif item.y < 0 then
         item.y = ypos + item.y
     end
-    item.y = item.y - (2 * item.ypad)
+    item.y = item.y - item.ypad
     item.dy = item.y + 1 + (item.ypad * 2)
     --
     -- record as setup
@@ -542,8 +542,8 @@ function Menu:setupDialog(dialog)
     --
     local bHeight = 0
     for _, but in pairs(dialog.buttons) do bHeight = math.max(bHeight, (but.ypad * 2) + 1) end
-    -- The height is text height (inner) + 4 for title and border and gap + buttons
-    dialog.height = dialog.inner_height + 4 + bHeight
+    -- The height is text height (inner) + 5 for title and border and gap + buttons
+    dialog.height = dialog.inner_height + 5 + bHeight
     dialog.width = dialog.inner_width + 6
     dialog.setup = true
 end	
