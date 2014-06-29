@@ -129,7 +129,7 @@ function Menu:findClickXY(buttons, x, y)
             print(button.width)
             print(x..":"..y)
         end
-        if (y >= button.y) and (y <= button.dy-1) and (x >= button.x) and (x <= button.dx) then
+        if (y >= button.y) and (y < button.dy) and (x >= button.x) and (x < button.dx) then
             return button
         end
     end
@@ -230,7 +230,7 @@ function Menu:setupItem(item, xpos, ypos, width)
         item.xpad = 2
     end
     item.x = item.x - item.xpad
-    item.dx = item.x + (item.xpad * 2) + item.width - 1
+    item.dx = item.x + (item.xpad * 2) + item.width
     if item.ypad == nil then
         item.ypad = 0
     end
@@ -240,8 +240,8 @@ function Menu:setupItem(item, xpos, ypos, width)
     elseif item.y < 0 then
         item.y = ypos + item.y
     end
-    item.y = item.y - item.ypad
-    item.dy = item.y + (item.ypad * 2)
+    item.y = item.y - (2 * item.ypad)
+    item.dy = item.y + (item.ypad * 2) + 1
     --
     -- record as setup
     item.setup = true
