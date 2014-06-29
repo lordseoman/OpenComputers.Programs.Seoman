@@ -293,6 +293,7 @@ end
 
 -- Put the screen to sleep
 function Menu:sleep()
+    self.isAsleep = true
     self.monitor.fill(2, 3, self.windowSize[1]-2, self.windowSize[2]-6, " ")
     self:showDialog({
         title="Gone To Sleep", 
@@ -389,7 +390,10 @@ function Menu:renderMainMenu()
     self.monitor.fill(x, 3, 1, y-6, "|")
     --
     -- Write the buttons on the bottom of the screen
-    local buttons = self:getButtons(-1)
+    local buttons = self:getButtons(y-2)
+    if #buttons == 0 then
+        buttons = self:getButtons(-1)
+    end
     local width = math.floor((x - 4)/#buttons)
     local xpos = 2
     for _, but in pairs(buttons) do
@@ -468,7 +472,11 @@ function Menu:selectOption(dialog, sleepTimer)
         end
         -- Returns nil if the timeout is triggered.
         if args[1] == nil then
-            return true
+            if sleepTimer == nil then
+                return true
+            else
+                waitForEvents = { "wakeup", }
+            end
         -- See if the event is one we are waiting for
         elseif table.contains(waitForEvents, args[1]) then
             -- Handle specific events
