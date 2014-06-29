@@ -9,6 +9,7 @@ require("functions")
 local component = require("component")
 local term = require("term")
 local event = require("event")
+local computer = require("computer")
 
 local colours = {
     white=0xFFFFFF,
@@ -315,6 +316,8 @@ function Menu:sleep()
             },
         },
     })
+    self.isAsleep = false
+    computer.pushSignal("wakeup")
 end    
 
 function Menu:showInfo()
@@ -456,6 +459,7 @@ end
 
 function Menu:selectOption(dialog, sleepTimer)
     -- If the dialog doesn't specify events, then use "touch"
+    local oldWFE = nil
     local waitForEvents = { "touch", }
     if dialog.event then waitForEvents = dialog.events end
     -- If the sleep timer should be active (usually only from renderMainMenu)
@@ -475,8 +479,11 @@ function Menu:selectOption(dialog, sleepTimer)
             if sleepTimer == nil then
                 return true
             else
+                oldWFE = waitForEvents
                 waitForEvents = { "wakeup", }
             end
+        elseif args[1] == "wakeup" then
+            waitForEvent = oldWFE
         -- See if the event is one we are waiting for
         elseif table.contains(waitForEvents, args[1]) then
             -- Handle specific events
