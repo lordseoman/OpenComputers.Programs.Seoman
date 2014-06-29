@@ -129,7 +129,7 @@ function Menu:findClickXY(buttons, x, y)
             print(button.width)
             print(x..":"..y)
         end
-        if (y >= button.y) and (y <= button.dy) and (x >= button.x) and (x <= button.dx) then
+        if (y >= button.y) and (y <= button.dy-1) and (x >= button.x) and (x <= button.dx) then
             return button
         end
     end
@@ -230,7 +230,7 @@ function Menu:setupItem(item, xpos, ypos, width)
         item.xpad = 2
     end
     item.x = item.x - item.xpad
-    item.dx = item.x + (item.xpad * 2) + item.width
+    item.dx = item.x + (item.xpad * 2) + item.width - 1
     if item.ypad == nil then
         item.ypad = 0
     end
@@ -241,7 +241,7 @@ function Menu:setupItem(item, xpos, ypos, width)
         item.y = ypos + item.y
     end
     item.y = item.y - item.ypad
-    item.dy = item.y + 1 + (item.ypad * 2)
+    item.dy = item.y + (item.ypad * 2)
     --
     -- record as setup
     item.setup = true
@@ -438,7 +438,7 @@ function Menu:showDialog(dialog)
         --
         -- Now draw the buttons on the bottom inside the box
         for _, button in pairs(dialog.buttons) do
-            self:setupItem(button, xOffset+1, yOffset+dialog.height-2, dialog.width-2)
+            self:setupItem(button, xOffset+1, yOffset+dialog.height-3, dialog.width-2)
             self:renderItem(button)
         end
         --
