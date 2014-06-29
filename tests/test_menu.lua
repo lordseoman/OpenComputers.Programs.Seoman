@@ -40,6 +40,7 @@ event.pull("touch")
 
 -- This renders the dialog and waits for input, so no need to wait
 m.monitor.fill(5, 10, m.windowSize[1]-5, m.windowSize[2]-15, " ")
+m.debug = true
 m:showInfo()
 
 -- Now run the menu
