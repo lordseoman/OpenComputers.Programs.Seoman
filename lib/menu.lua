@@ -353,7 +353,7 @@ function Menu:shutdown(msg)
     })
     -- reset the monitor colours
     self.monitor.setBackground(colours.black)
-    self.monitor.setForegrount(colours.white)
+    self.monitor.setForeground(colours.white)
     self.monitor.fill(1, 1, self.windowSize[1], self.windowSize[2], " ")
     self.monitor.set(1,5, "Thankyou, please come again.")
     --
