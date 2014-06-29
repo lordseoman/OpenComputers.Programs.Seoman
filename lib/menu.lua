@@ -117,10 +117,14 @@ end
 
 -- Find if a button has been clicked
 function Menu:findClickXY(buttons, x, y)
+    if self.debug then
+        self.monitor.set(10, self.windowSize[2]-4, "Click at "..x..","..y..":")
     for _, button in ipairs(buttons) do
         if self.debug then
-            message = string.format("Click at %dx%d, Button %d,%d => %d, %d", x, y, button.x, button.y)
-            self.monitor.set(10, self.windowSize[2]-4, message)
+            message = string.format(
+                "Button %d,%d => %d, %d", button.x, button.y, button.dx, button.dy
+            )
+            self.monitor.set(26, self.windowSize[2]-4, message)
             os.sleep(2)
         end
         if (y >= button.y) and (y < button.dy) and (x >= button.x) and (x < button.dx) then
@@ -253,7 +257,7 @@ function Menu:showHelp()
         },
         timeout=0, 
         buttons={
-            close={
+            {
                 ypad=0,
                 xpad=0,
                 text="CLOSE", 
@@ -276,7 +280,7 @@ function Menu:showStatus()
         },
         timeout=0, 
         buttons={
-            close={
+            {
                 ypad=0,
                 xpad=0,
                 text="CLOSE", 
@@ -302,7 +306,7 @@ function Menu:sleep()
         },
         timeout=0, 
         buttons={
-            wakeup={
+            {
                 ypad=1,
                 xpad=1,
                 text="WAKE UP", 
@@ -326,7 +330,7 @@ function Menu:showInfo()
         },
         timeout=0, 
         buttons={
-            close={
+            {
                 ypad=0,
                 xpad=0,
                 text="CLOSE", 
