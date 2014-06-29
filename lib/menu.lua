@@ -469,7 +469,7 @@ function Menu:selectOption(dialog, sleepTimer)
     end
     while true do
         local args
-        if dialog.timeout then
+        if dialog.timeout and dialog.timeout > 0 then
             args = { event.pull(dialog.timeout, nil) }
         else
             args = { event.pull(nil) }
@@ -479,10 +479,12 @@ function Menu:selectOption(dialog, sleepTimer)
             if sleepTimer == nil then
                 return true
             else
+                print("gone to sleep")
                 oldWFE = waitForEvents
                 waitForEvents = { "wakeup", }
             end
         elseif args[1] == "wakeup" then
+            print("got wakeup signal")
             waitForEvent = oldWFE
         -- See if the event is one we are waiting for
         elseif table.contains(waitForEvents, args[1]) then
