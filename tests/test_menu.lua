@@ -25,7 +25,7 @@ m:renderMainMenu()
 m.monitor.set(5, 15, "Click anywhere to continue.")
 event.pull("touch")
 
-m.monitor.fill(5, 10, m.windowSize[1]-5, m.windowSize[2]-5, " ")
+m.monitor.fill(5, 10, m.windowSize[1]-5, m.windowSize[2]-15, " ")
 m.monitor.set(5, 10, "Click a button")
 local p = { event.pull("touch") }
 m.monitor.set(5, 12, "Thanks "..p[6]..", you hit button "..p[5])
