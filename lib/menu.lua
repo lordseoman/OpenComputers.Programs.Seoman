@@ -479,12 +479,10 @@ function Menu:selectOption(dialog, sleepTimer)
             if sleepTimer == nil then
                 return true
             else
-                print("gone to sleep")
                 oldWFE = waitForEvents
                 waitForEvents = { "wakeup", }
             end
         elseif args[1] == "wakeup" then
-            print("got wakeup signal")
             waitForEvent = oldWFE
         -- See if the event is one we are waiting for
         elseif table.contains(waitForEvents, args[1]) then
