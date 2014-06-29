@@ -525,13 +525,10 @@ function Menu:setupDialog(dialog)
         dialog.inner_height = dialog.height
     end
     --
-    local count = 0
-    for _, but in pairs(dialog.buttons) do count = count + 1 end
-    if count > 0 then
-        dialog.height = dialog.inner_height + 6
-    else
-        dialog.height = dialog.inner_height + 5
-    end
+    local bHeight = 0
+    for _, but in pairs(dialog.buttons) do bHeight = math.max(bHeight, (but.ypad * 2) + 1) end
+    -- The height is text height (inner) + 4 for title and border and gap + buttons
+    dialog.height = dialog.inner_height + 4 + bHeight
     dialog.width = dialog.inner_width + 6
     dialog.setup = true
 end	
