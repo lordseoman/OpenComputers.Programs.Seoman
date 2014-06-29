@@ -171,7 +171,7 @@ function Menu:getButtons(ypos)
     end
     local retArray = {}
     for _, button in ipairs(self.buttons) do
-        if (button.y >= ypos) and (button.dy == nil or button.dy < ypos) then
+        if (ypos >= button.y) and (button.dy == nil or ypos < button.dy) then
             table.insert(retArray, button)
 --            table.insert(retArray, table.copy(button))
         end
