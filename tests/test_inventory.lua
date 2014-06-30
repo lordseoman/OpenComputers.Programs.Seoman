@@ -7,8 +7,8 @@ local Inventory = require("inventory")
 local component = require("component")
 local event = require("event")
 
-print("Here is a list of available chests..")
-print("------------------------------------")
+print("Here is a list of available chests:")
+print("---------------------------------------")
 local num = 1
 local chests = {}
 for addr, name in component.list() do
@@ -18,6 +18,7 @@ for addr, name in component.list() do
     num = num + 1
   end
 end
+print("---------------------------------------")
 local selected = {}
 repeat
   if #selected == 0 then
@@ -27,7 +28,7 @@ repeat
   end
   local args = { event.pull("key_down") }
   local selection = tonumber(string.char(args[3]))
-  if selection < 1 or select > #chests then
+  if selection < 1 or selection > #chests then
       print("Sorry, please choose from the above.")
   else
     local chest1 = component.proxy(chests[selection])
