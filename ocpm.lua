@@ -6,7 +6,7 @@ could download updates and dependencies to my programs with. MPT was still too
 broken with the CC versus OC differences and OPPM is a little too Open Programs
 for me.
 --]]
-__version__ = 0.11
+__version__ = 0.12
 
 local component = require("component")
 local event = require("event")
@@ -22,6 +22,7 @@ local wget = loadfile("/bin/wget.lua")
 local OCPM = {
   repofilename="/etc/ocpm/repos.cfg",
   install_basedir="/usr",
+  source_url = "https://github.com/lordseoman/OpenComputers.Programs.Seoman/raw/master/ocpm.lua"
 }
 
 function OCPM:new(o)
@@ -88,13 +89,9 @@ function OCPM:parseArgs(...)
         for _, repo in ipairs(self.repos) do
             self:updatePackages(repo)
         end
-    elseif args[1] == "forceocpm" then
-        local repo = self:getRepository("seoman")
-        if repo == nil then
-            print("You need to add the seoman repo first.")
-            return
-        end
-        self:download(repo.url .. "/ocpm.lua", "/usr/bin/ocpm.lua", true)
+    elseif args[1] == "--reinstall" then
+        print("Forcing a re-install of OCPM."
+        self:download(self.source_url, "/usr/bin/ocpm.lua", true)
     end
 end
 
