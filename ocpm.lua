@@ -6,7 +6,7 @@ could download updates and dependencies to my programs with. MPT was still too
 broken with the CC versus OC differences and OPPM is a little too Open Programs
 for me.
 --]]
-__version__ = 0.12
+__version__ = 0.13
 
 local component = require("component")
 local event = require("event")
@@ -135,7 +135,7 @@ function OCPM:addRepository(name, url)
     local repo = {name=name, url=url}
     table.insert(self.repos, repo)
     self:updatePackages(repo)
-    self:savefile(self.repofilename)
+    self:savefile(self.repofilename, self.repos)
 end
     
 function OCPM:updatePackages(repo)
