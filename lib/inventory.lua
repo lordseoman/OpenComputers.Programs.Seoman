@@ -15,7 +15,7 @@ Inv._chests = dict:new{
 -- These allow oposites to be coded, pushItemIntoSlot and pullItemIntoSlot use
 -- string directions (ForgeDirection) and not ints.
 directions = dict:new{ 
-    down="up", up="down", south="north", north="south", west="east", east="west" 
+    down="up", up="down", south="north", north="south", west="east", east="west",
 }
 
 function Inv:new(address)
@@ -81,6 +81,11 @@ function Inv:setup(address)
 end
 
 function Inv:setDirection(direction, target)
+    if direction == "bottom" then
+        direction = "down"
+    elseif direction = "top" then
+        direction = "up"
+    end
     if not directions:contains(direction) then
         error("Unknown direction: "..direction)
     end
@@ -236,6 +241,21 @@ function Inv:waitUntilCount(count)
         end
         os.sleep(2)
     until num >= count
+end
+
+function Inv:scanChest(compFunc, ...)
+    if compFunc == nil then
+        compFunc = function(...) return true end
+    end
+    retVal = {}
+    for slot, stack in pairs(self.inv.getAllStacks()) do
+        if compFunc(..., stack) then
+            stack.slot = slot
+            stack.inventory = self
+            retVal[slot] = stack
+        end
+    end
+    return retVal
 end
 
 return Inv
