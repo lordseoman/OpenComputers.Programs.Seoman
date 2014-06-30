@@ -249,7 +249,7 @@ function Inv:scanChest(compFunc, ...)
     end
     retVal = {}
     for slot, stack in pairs(self.inv.getAllStacks()) do
-        if stack ~= nil and compFunc(..., stack) then
+        if type(stack) == "table" and compFunc(..., stack) then
             stack.slot = slot
             stack.inventory = self
             retVal[slot] = stack
