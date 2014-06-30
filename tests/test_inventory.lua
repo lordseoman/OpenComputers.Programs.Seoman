@@ -6,6 +6,7 @@ local sFunc = require("functions")
 local Inventory = require("inventory")
 local component = require("component")
 local event = require("event")
+local sides = require("sides")
 
 print("Here is a list of available chests:")
 print("---------------------------------------")
@@ -33,15 +34,15 @@ repeat
   else
     local chest1 = component.proxy(chests[selection])
     print("You selected: addr="..chest1.address.." type="..chest1.type)
-    table.insert(selected, selection)
+    table.insert(selected, chests[selection])
   end
 until #selected == 2
 
 print("---------------------------------------")
 local inv1 = Inventory:new(selected[1])
-print(string.format("Inventory %s of type=%s with %d slots", inv1.inv.address, inv1.inv.type, inv1.size))
+print(string.format("Inventory '%s' with %d slots", inv1.inv.type, inv1.size))
 local inv2 = Inventory:new(selected[2])
-print(string.format("Inventory %s of type=%s with %d slots", inv2.inv.address, inv2.inv.type, inv2.size))
+print(string.format("Inventory '%s' with %d slots", inv2.inv.type, inv2.size))
 
 print("---------------------------------------")
 print("Where is chest #2 compared to chest #1?")
@@ -60,6 +61,7 @@ until #selected == 2
 print("---------------------------------------")
 
 print("Now place some items in the first chest, and hit a key.")
+event.pull("key_down")
 for slot, stack in pairs(inv1:scanChest()) do
   print(" - slot "..slot.." - "..stack.name)
 end

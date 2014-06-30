@@ -83,7 +83,7 @@ end
 function Inv:setDirection(direction, target)
     if direction == "bottom" then
         direction = "down"
-    elseif direction = "top" then
+    elseif direction == "top" then
         direction = "up"
     end
     if not directions:contains(direction) then
@@ -249,7 +249,7 @@ function Inv:scanChest(compFunc, ...)
     end
     retVal = {}
     for slot, stack in pairs(self.inv.getAllStacks()) do
-        if compFunc(..., stack) then
+        if stack ~= nil and compFunc(..., stack) then
             stack.slot = slot
             stack.inventory = self
             retVal[slot] = stack
