@@ -62,6 +62,17 @@ print("---------------------------------------")
 
 print("Now place some items in the first chest, and hit a key.")
 event.pull("key_down")
-for slot, stack in pairs(inv1:scanChest()) do
-  print(" - slot "..slot.." - "..stack.name)
+local stacks = inv1:scanChest()
+for slot, stack in pairs(stacks) do
+  print(" - slot "..slot.." - "..stack.name.." (qty: "..stack.size..")")
+end
+
+print("Transfering half of each stack to chest #2")
+local newstacks = nil
+for slot, stack in pairs(stacks) do
+  table.extend(newstacks, inv1.pushStack(stack, inv2, math.floor(stack.size)))
+end
+print("Outcome..")
+for _, stack in ipairs(newstacks) do
+  print(stack.inventory.inv.type..": "..stack.name.." (qty: "..stack.size..") ".."slot: "..stack.slot)
 end
