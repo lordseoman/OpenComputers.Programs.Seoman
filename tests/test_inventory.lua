@@ -2,6 +2,9 @@
   This is for testing the functionality in lib/inventory.lua
 --]]
 
+-- This is annoying, lua is caching across executions
+package.loaded.inventory = nil
+
 local sFunc = require("functions")
 local Inventory = require("inventory")
 local component = require("component")
@@ -64,11 +67,11 @@ print("Now place some items in the first chest, and hit a key.")
 event.pull("key_down")
 local stacks = inv1:scanChest()
 for slot, stack in pairs(stacks) do
-  print(" - slot "..slot.." - "..stack.name.." (qty: "..stack.size..")")
+  print(" - slot "..stack.slot.." - "..stack.name.." (qty: "..stack.size..")")
 end
 
 print("Transfering half of each stack to chest #2")
-local newstacks = nil
+local newstacks = {}
 for slot, stack in pairs(stacks) do
   table.extend(newstacks, inv1:pushStack(stack, inv2, math.floor(stack.size)))
 end
