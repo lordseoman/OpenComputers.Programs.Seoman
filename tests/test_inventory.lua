@@ -73,7 +73,7 @@ end
 print("Transfering half of each stack to chest #2")
 local newstacks = {}
 for slot, stack in pairs(stacks) do
-  table.extend(newstacks, inv1:pushStack(stack, inv2, math.floor(stack.size)))
+  table.extend(newstacks, inv1:pushStack(stack, inv2, math.floor(stack.size/2)))
 end
 print("Outcome..")
 for _, stack in ipairs(newstacks) do
