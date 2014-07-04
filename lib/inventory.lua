@@ -141,14 +141,14 @@ function Inv:pullStack(stack, source, amount)
             local transfer = math.min(space, amount)
             -- The response to pullItem is nil whether it works or not, so check
             -- our slot to see if we got the stacks
-            self.inv.pullItemIntoSlot(self.dir[source.name], stack.slot, transfer, slot)
+            self.inv.pullItemIntoSlot(self.dir[source.inv.address], stack.slot, transfer, slot)
             newstack = self.inv.getStackInSlot(slot)
             if newstack == nil then
                 print("Failed to pull into slot "..slot)
             else
                 local pulled = space - (newstack.maxSize - newstack.size)
                 if pulled > 0 then
-                    print("pulled "..pulled.." "..self.dir[source.name])
+                    print("pulled "..pulled.." "..self.dir[source.inv.type])
                     newstack.slot = slot
                     newstack.inventory = self
                     table.insert(retList, newstack)
@@ -179,7 +179,7 @@ function Inv:pushStack(stack, target, amount)
     for slot=target.input.min, target.input.max do
         -- Have to push then check as OC always returns nil and an error but
         -- it does actually work
-        self.inv.pushItemIntoSlot(self.dir[target.name], stack.slot, amount, slot)
+        self.inv.pushItemIntoSlot(self.dir[target.inv.address], stack.slot, amount, slot)
         local oldstack = self.inv.getStackInSlot(stack.slot)
         if oldstack then
             pushed = stack.size - oldstack.size
@@ -188,7 +188,7 @@ function Inv:pushStack(stack, target, amount)
             pushed = stack.size
         end
         if pushed > 0 then
-            print("pushed "..pushed.." ".. self.dir[target.name])
+            print("pushed "..pushed.." ".. self.dir[target.inv.type])
             if target.canTransfer then
                 newstack = target.inv.getStackInSlot(slot)
                 newstack.slot = slot
