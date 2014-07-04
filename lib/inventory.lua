@@ -148,7 +148,7 @@ function Inv:pullStack(stack, source, amount)
             else
                 local pulled = space - (newstack.maxSize - newstack.size)
                 if pulled > 0 then
-                    print("pulled "..pulled.." "..self.dir[source.inv.address])
+  --                  print("pulled "..pulled.." "..self.dir[source.inv.address])
                     newstack.slot = slot
                     newstack.inventory = self
                     table.insert(retList, newstack)
@@ -188,7 +188,7 @@ function Inv:pushStack(stack, target, amount)
             pushed = stack.size
         end
         if pushed > 0 then
-            print("pushed "..pushed.." ".. self.dir[target.inv.address])
+--            print("pushed "..pushed.." ".. self.dir[target.inv.address])
             if target.canTransfer then
                 newstack = target.inv.getStackInSlot(slot)
                 newstack.slot = slot

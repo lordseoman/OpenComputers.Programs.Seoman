@@ -10,6 +10,7 @@ local Inventory = require("inventory")
 local component = require("component")
 local event = require("event")
 local sides = require("sides")
+local dict = require("dict")
 
 print("Here is a list of available chests:")
 print("---------------------------------------")
@@ -71,11 +72,30 @@ for slot, stack in pairs(stacks) do
 end
 
 print("Transfering half of each stack to chest #2")
-local newstacks = {}
+local newstacks = dict:new{}
 for slot, stack in pairs(stacks) do
-  table.extend(newstacks, inv1:pushStack(stack, inv2, math.floor(stack.size/2)))
+  local result = inv1:pushStack(stack, inv2, math.floor(stack.size/2))
+  for _, stack in ipairs(result) do
+    newstacks[stack.slot] = stack
+  end
 end
 print("Outcome..")
-for _, stack in ipairs(newstacks) do
+print("---------------------------------------")
+for slot, stack in pairs(newstacks) do
   print(stack.inventory.inv.type..": "..stack.name.." (qty: "..stack.size..") ".."slot: "..stack.slot)
+end
+
+print("Press any key to transfer items back using PULL")
+event.pull("key_down")
+for slot, stack in pairs(newstacks) do
+  local result = inv1:pullStack(stack, inv2)
+end
+local stacks = inv1:scanChest()
+for slot, stack in pairs(stacks) do
+  print(" - slot "..stack.slot.." - "..stack.name.." (qty: "..stack.size..")")
+end
+print("Condensing Items.")
+inv1.inv.condenseItems()
+for slot, stack in pairs(stacks) do
+  print(" - slot "..stack.slot.." - "..stack.name.." (qty: "..stack.size..")")
 end
