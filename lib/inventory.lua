@@ -10,6 +10,7 @@ Inv._chests = dict:new{
     "iron", "silver", "copper", "gold", "diamond", "crystal",
     "ender_chest",
     "chest",
+    "book_receptacle",
 }
 
 -- These allow oposites to be coded, pushItemIntoSlot and pullItemIntoSlot use
@@ -271,7 +272,7 @@ function Inv:pushAll(target, force)
     if self.size > target.size and force ~= true then
         error("You can do that when the target is smaller than us.")
     end
-    for slot=1, self.size do
+    for slot=1, target.size do
         self.inv.pushItemIntoSlot(self.dir[target.inv.address], slot, 1, slot)
     end
 end

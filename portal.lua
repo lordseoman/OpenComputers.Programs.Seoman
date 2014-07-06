@@ -63,7 +63,7 @@ function PortalCrtl:loadConfig()
         bookcase_bot_addr = "8980e8bf",
         share_chest_addr  = "631dfdd3",
         portal_chest_addr = "8017c972",
-        book_recepticle_addr = "",
+        book_recepticle_addr = "68367be9",
         -- Chest is below the Book Recepticle
         portal_chest_direction = "down",
         -- Direction the top bookcase is to the transvestor interface
