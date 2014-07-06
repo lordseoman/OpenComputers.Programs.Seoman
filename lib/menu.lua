@@ -82,6 +82,7 @@ local Menu = {
     debug=false,
     isShutdown=false,
     isAsleep=false,
+    isSetup=false,
     sleepTimer=20,
 }
 
@@ -112,6 +113,9 @@ function Menu:new(o)
 end
 
 function Menu:setup()
+    if self.isSetup then
+        return
+    end
     -- Set the list spacing to 2
     self.page_support.spacing = 2
     -- Set the number displayed based on the size of the screen
@@ -128,6 +132,7 @@ function Menu:setup()
         background_colour=self.background_colour,
     }
     self:setupItem(self.title, 1, 1)
+    self._isSetup = true
 end
 
 -- Find if a button has been clicked
@@ -478,7 +483,7 @@ function Menu:renderMainMenu()
         buttons = self:getButtons(0)
     end
     local width = math.floor((x - 4)/#buttons)
-    local xpos = 2
+    local xpos = 3 + (x - (#buttons * width) - 4)
     for _, but in ipairs(buttons) do
         self:setupItem(but, xpos, y, width)
         self:renderItem(but)
