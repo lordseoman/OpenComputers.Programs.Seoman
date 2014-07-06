@@ -562,6 +562,9 @@ function Menu:selectOption(dialog, sleepTimer)
             args = { event.pull(nil) }
         end
         -- Returns nil if the timeout is triggered.
+        if self.debug then
+            self.monitor.set(26, self.windowSize[2]-4, "Event received: "..tostring(args[1]))
+        end
         if args[1] == nil then
             if sleepTimer == nil then
                 return true
