@@ -116,15 +116,12 @@ function Menu:setup()
     if self.isSetup then
         return
     end
-    -- Set the list spacing to 2
-    self.page_support.spacing = 2
     -- Set the number displayed based on the size of the screen
     self.page_support.num_per_page = math.floor((self.windowSize[2] - 11) / self.page_support.spacing)
     -- The page down button shifts half the viewing window.
     self.page_support.shift_count = math.floor(self.page_support.num_per_page / 2)    
     -- The title element doesn't change, so fix that one here
     self.title = {
-        y=1,
         ypad=0,
         xpad=0,
         text=self.title, 
@@ -132,7 +129,7 @@ function Menu:setup()
         background_colour=self.background_colour,
     }
     self:setupItem(self.title, 1, 1)
-    self._isSetup = true
+    self.isSetup = true
 end
 
 -- Find if a button has been clicked
@@ -715,7 +712,7 @@ function Menu:run()
     self:setup()
     repeat
         self:renderMainMenu()
-        self:renderList(self:getMainMenuList())
+        self:renderList(self:getMainMenuList(), 10, 6+4)
         self:selectOption({buttons=self.buttons}, self.sleepTimer)
     until self.isShutdown
 end
