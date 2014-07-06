@@ -13,7 +13,7 @@ elseif args[1] == "methods" then
         print("No component found with that address or type: "..args[2])
         return
     end
-    thisProx = component.proxy(address)
+    thisProxy = component.proxy(address)
     for name, _ in pairs(thisProxy) do
         print(name)
     end
