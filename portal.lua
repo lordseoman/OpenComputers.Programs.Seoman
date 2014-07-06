@@ -4,11 +4,12 @@
  *
  --]]
  
- local PortalCrtl = require("menu")
- local Inventory = require("inventory")
- 
- 
- function PortalCrtl:showInfo()
+local PortalCrtl = require("menu")
+local Inventory = require("inventory")
+
+local colours = PortalCrtl.hexcolours
+
+function PortalCrtl:showInfo() 
     self:showDialog({
         title="Portal Usage Information",
         lines={
@@ -77,6 +78,7 @@ function PortalCrtl:saveConfig()
 end
 
 function PortalCrtl:setup()
+    self:loadConfig()
     self.title = {
         y=1,
         ypad=0,
@@ -85,7 +87,7 @@ function PortalCrtl:setup()
         text_colour=colours.yellow,
         background_colour=self.background_colour,
     }
-    self:setupItem(self.title, 1, 1, x)
+    self:setupItem(self.title, 1, 1)
     --
     -- Setup the storage parts, this isn't needed on remote portals
     if not self.config.remote_site then
@@ -105,7 +107,7 @@ function PortalCrtl:setup()
         -- move books directly to the share chest without going through the bottom
         -- chest.
         self.fake_share = Inventory:new("fake_sharechest_27")
-        self.bookcase_top:setDirection(self.config.bookcase_top_to_tvectorint, self.fake_share)
+        self.chest_top:setDirection(self.config.bookcase_top_to_tvectorint, self.fake_share)
         -- And finally the share chest under the bottom chest
         self.share_chest = Inventory:new(self.config.share_chest_addr)
         self.chest_bot:setDirection("down", self.share_chest)
@@ -131,12 +133,12 @@ local function isLinkingBook(stack)
 end
 
 function PortalCrtl:scanBookcase(chest)
-    if chest:slotsUsed() then
+    if chest:slotsUsed() > 0 then
         error("The chest at "..chest.inv.address.." is not empty.")
     end
     chest:pullAll(chest.bookcase)
     stacks = chest:scanChest(isLinkingBook)
-    chest:pushAll(chest.bookcase)
+    chest:pushAll(chest.bookcase, true)
     return stacks
 end
 
@@ -235,6 +237,5 @@ local portal = PortalCrtl:new({
             callback=function(menu, button) menu:shutdown() end,
         },
     },
-
 })
 portal:run()

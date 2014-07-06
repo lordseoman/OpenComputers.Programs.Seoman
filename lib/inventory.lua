@@ -267,8 +267,8 @@ function Inv:pullAll(source)
     end
 end
 
-function Inv:pushAll(target)
-    if self.size > target.size then
+function Inv:pushAll(target, force)
+    if self.size > target.size and force ~= true then
         error("You can do that when the target is smaller than us.")
     end
     for slot=1, self.size do
@@ -278,8 +278,9 @@ end
 
 function Inv:slotsUsed()
     count = 0
+    -- You have to do pairs as ipairs breaks with the first empty slot.
     for slot, stack in pairs(self.inv.getAllStacks()) do
-        if stack ~= nil then
+        if type(stack) == "table" then
             count = count + 1
         end
     end

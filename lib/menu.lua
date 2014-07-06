@@ -89,12 +89,7 @@ function Menu:new(o)
     if type(o) == nil then
         o = {}
     elseif type(o) ~= "table" then
-        print("expected a table as input with any args; got " .. type(o))
-        return
-    end
-    if o.title == nil then
-        print("requires a 'title' for this menu")
-        return
+        error("expected a table as input with any args; got " .. type(o))
     end
     setmetatable(o, self)
     self.__index = self
@@ -132,7 +127,7 @@ function Menu:setup()
         text_colour=colours.yellow,
         background_colour=self.background_colour,
     }
-    self:setupItem(self.title, 1, 1, x)
+    self:setupItem(self.title, 1, 1)
 end
 
 -- Find if a button has been clicked
@@ -223,6 +218,9 @@ end
 function Menu:setupItem(item, xpos, ypos, width)
     if item.setup == true then
         return
+    end
+    if width == nil then
+        width = self.windowSize[1]
     end
     --
     -- Figure out the width of the button
