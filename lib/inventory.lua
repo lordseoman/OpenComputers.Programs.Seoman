@@ -258,4 +258,32 @@ function Inv:scanChest(compFunc, ...)
     return retVal
 end
 
+function Inv:pullAll(source)
+    if self.size < source.size then
+        error("You can do that when the source is bigger than us.")
+    end
+    for slot=1, source.size do
+        self.inv.pullItemIntoSlot(self.dir[source.inv.address], slot, 1, slot)
+    end
+end
+
+function Inv:pushAll(target)
+    if self.size > target.size then
+        error("You can do that when the target is smaller than us.")
+    end
+    for slot=1, self.size do
+        self.inv.pushItemIntoSlot(self.dir[target.inv.address], slot, 1, slot)
+    end
+end
+
+function Inv:slotsUsed()
+    count = 0
+    for slot, stack in pairs(self.inv.getAllStacks()) do
+        if stack ~= nil then
+            count = count + 1
+        end
+    end
+    return count
+end
+
 return Inv

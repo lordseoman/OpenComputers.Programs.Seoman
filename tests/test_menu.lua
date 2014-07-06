@@ -10,7 +10,7 @@ package.loaded.menu = nil
 local event = require("event")
 local Menu = require("menu")
 
-m = Menu:new{ title="A Testing Menu", windowSize={80, 25}, }
+m = Menu:new{ title="A Testing Menu", windowSize={70, 38}, }
 
 m.monitor.set(5, 35, "Click anywhere to continue.")
 m.monitor.fill(5, 5, 25, 25, "o")

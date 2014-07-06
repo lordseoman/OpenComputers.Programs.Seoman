@@ -75,6 +75,7 @@ local Menu = {
     monitor=nil,
     options={},
     page_support={
+        spacing=1,
         num_per_page=27,
         min=1,
     },
@@ -113,6 +114,25 @@ function Menu:new(o)
     o.maxOptions = o.windowSize[2] - 8
     o.maxLength = o.windowSize[1] - 6
     return o
+end
+
+function Menu:setup()
+    -- Set the list spacing to 2
+    self.page_support.spacing = 2
+    -- Set the number displayed based on the size of the screen
+    self.page_support.num_per_page = math.floor((self.windowSize[2] - 11) / self.page_support.spacing)
+    -- The page down button shifts half the viewing window.
+    self.page_support.shift_count = math.floor(self.page_support.num_per_page / 2)    
+    -- The title element doesn't change, so fix that one here
+    self.title = {
+        y=1,
+        ypad=0,
+        xpad=0,
+        text=self.title, 
+        text_colour=colours.yellow,
+        background_colour=self.background_colour,
+    }
+    self:setupItem(self.title, 1, 1, x)
 end
 
 -- Find if a button has been clicked
@@ -236,10 +256,8 @@ function Menu:setupItem(item, xpos, ypos, width)
     -- if the y is -ve, then from the bottom
     if item.y == nil then
         item.y = ypos
-    elseif item.y < 0 then
-        item.y = ypos + item.y
     else
-        item.y = ypos
+        item.y = ypos + item.y
     end
     item.y = item.y - (2 * item.ypad)
     item.dy = item.y + (item.ypad * 2) + 1
@@ -362,23 +380,86 @@ function Menu:shutdown(msg)
     return true
 end
 
+function Menu:selectThingFromList(selection)
+    self:showDialog({
+        title="Main Item Selected",
+        lines={
+           "You have selected the following:", 
+           "", 
+           "  - "..selection.text, 
+           "",
+           "If you are seeing this it is because the selectThingFromList() method",
+           "on the menu has not been overriden. This dialog will timeout after",
+           "4 seconds.",
+        },
+        timeout=4,
+        buttons={},
+    })
+end
+
+function Menu:renderList(listOfThings, xpos, ypos)
+    
+    -- The number of items rendered on in the main area.
+    local count = 0
+    -- The list of buttons or items that can be selected
+    local items = {}
+    
+    -- Set the page_controls
+    self.page_support.total = #listOfThings
+    self.page_support.max = 0
+    
+    for idx, thing in ipairs(listOfThings) do
+        -- Use a repeat loop because Lua doesn't have 'continue'
+        repeat
+            -- Skip the ones off the top of the list, so if we have scrolled 
+            -- down then min is the top of the viewing window for the list.
+            if idx < self.page_support.min then
+                break
+            end
+            -- Set the background colour, if the current thing is the active
+            -- thing (has been selected) then highlight it
+            if self.page_support.active == thing then
+                background_colour = colours.green
+            else
+                background_colour = self.background_colour
+            end
+        
+            -- Create an item just for this 'thing', we need to do this each
+            -- time because the position changes
+            local item = {
+                x=0,
+                y=((count - self.page_support.min) * self.page_support.spacing),
+                ypad=0,
+                xpad=0,
+                reference=idx,
+                text=thing,
+                text_colour=colours.lightBlue,
+                background_colour=background_colour,
+                callback=self.selectThingFromList,
+            }
+            self:setupItem(item, xpos, ypos)
+            table.insert(items, item)
+            self:renderItem(item)
+        until true
+        self.page_support.max = count
+        -- page_support.min is the first item so we need +1 to give us the number
+        -- rendered already.
+        if (count - self.page_support.min + 1) >= self.page_support.num_per_page then
+            break
+        end
+    end
+    for _, item in ipairs(self:getPageControls(xpos, ypos)) do
+        self:renderItem(item)
+        table.insert(items, item)
+    end
+end
+
 function Menu:renderMainMenu()
     local x, y = self.windowSize[1], self.windowSize[2]
     -- Clear the screen
     self.monitor.fill(1, 1, x, y, " ")
     --
     -- Write the title in the middle top line
-    if type(self.title) == "string" then
-        self.title = {
-            y=1,
-            ypad=0,
-            xpad=0,
-            text=self.title, 
-            text_colour=colours.yellow,
-            background_colour=self.background_colour,
-        }
-    end
-    self:setupItem(self.title, 1, 1, x)
     self:renderItem(self.title)
     --
     -- The menu border comes next
@@ -405,6 +486,7 @@ function Menu:renderMainMenu()
         self:renderItem(but)
         xpos = xpos + width
     end
+    return buttons
 end
 --
 -- A dialog is a window in the center of the monitor that shows information or
@@ -549,9 +631,88 @@ function Menu:setupDialog(dialog)
     dialog.setup = true
 end	
 
+-- Page control
+function Menu:pagingButton(button)
+    if button.text == "Up" then
+        self.page_support.min = self.page_support.min - 1
+    elseif button.text == "PgUp" then
+        self.page_support.min = math.max(self.page_support.min - self.page_support.shift_count, 1)
+    elseif button.text == "Dn" then
+        self.page_support.min = self.page_support.min + 1
+    elseif button.text == "PgDn" then
+        self.page_support.min = math.min(self.page_support.min + self.page_support.shift_count, self.page_support.total)
+    else
+        error("Unknown paging button.")
+    end
+end
+
+function Menu:getPageControls(xpos, ypos)
+    local buttons = {}
+    if self.page_support.min > 1 then
+        local Up1 = {
+            x=self.windowSize[1] - 5,
+            y=ypos + 1,
+            width=4,
+            ypad=1,
+            xpad=1,
+            text="Up",
+            text_colour=colours.lightBlue,
+            background_colour=colours.yellow,
+            callback=self.pagingButton,
+        }
+        local PgUp = {
+            x=self.windowSize[1] - 5,
+            y=ypos+5,
+            width=4,
+            ypad=1,
+            xpad=0,
+            text="PgUp",
+            text_colour=colours.lightBlue,
+            background_colour=colours.yellow,
+            callback=self.pagingButton,
+        }
+        table.insert(buttons, Up1)
+        table.insert(buttons, PgUp)
+    end
+    if self.page_support.max < self.page_support.total then
+        local dn1 = {
+            x=self.windowSize[1] - 5,
+            y=ypos + (self.page_support.num_per_page * self.page_support.spacing) - 2,
+            width=4,
+            ypad=1,
+            xpad=1,
+            text="Dn",
+            text_colour=colours.lightBlue,
+            background_colour=colours.yellow,
+        }
+        local PgDn = {
+            x=self.windowSize[1] - 5,
+            y=ypos + (self.page_support.num_per_page * self.page_support.spacing) - 6,
+            width=4,
+            ypad=1,
+            xpad=0,
+            text="PgDn",
+            text_colour=colours.lightBlue,
+            background_colour=colours.yellow,
+        }
+        table.insert(buttons, Dn1)
+        table.insert(buttons, PgDn)
+    end
+    return buttons
+end
+
+function Menu:getMainMenuList()
+    return {
+        "This is a placeholder because nothing is in the list.",
+        "Click to get nothing really.",
+    }
+end
+
 function Menu:run()
+    self:setup()
     repeat
         self:renderMainMenu()
+        self:renderList(self:getMainMenuList())
         self:selectOption({buttons=self.buttons}, self.sleepTimer)
     until self.isShutdown
 end
