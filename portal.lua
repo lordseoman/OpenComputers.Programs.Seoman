@@ -28,7 +28,7 @@ function PortalCrtl:showInfo()
             "the portal will close after 12 seconds."
         },
         buttons={
-            close={
+            {
                 ypad=0,
                 xpad=1,
                 text="CLOSE",
@@ -84,7 +84,6 @@ end
 function PortalCrtl:setup()
     self:loadConfig()
     self.title = {
-        y=1,
         ypad=0,
         xpad=0,
         text=self.config.title, 
@@ -208,7 +207,7 @@ local portal = PortalCrtl:new({
     buttons={
         -- buttons on the bottom of the screen
         {
-            text="Help",
+            text="Info",
             y=0,    --bottom
             xpad=1,
             ypad=1,
