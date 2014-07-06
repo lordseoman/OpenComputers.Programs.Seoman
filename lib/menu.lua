@@ -15,8 +15,12 @@ local colours = {
     white=0xFFFFFF,
     black=0x000000,
     blue=0x0000FF,
+    darkBlue=0x000099,
+    lightBlue=0x66B2FF,
     red=0xFF0000,
     green=0x00FF00,
+    darkGreen=0x006633,
+    lightGreen=0x33FF33,
     yellow=0xFFFF00,
     magenta=0x00FFFF,
     purple=0xFF00FF,
@@ -398,16 +402,16 @@ function Menu:selectThingFromList(selection)
 end
 
 function Menu:renderList(listOfThings, xpos, ypos)
-    
     -- The number of items rendered on in the main area.
     local count = 0
     -- The list of buttons or items that can be selected
     local items = {}
-    
     -- Set the page_controls
     self.page_support.total = #listOfThings
     self.page_support.max = 0
-    
+    -- Width is the left gap + room for the Up and PgDn buttons
+    width = self.windowSize[1] - 6 - 6
+    -- Iterate through the list of things to render.
     for idx, thing in ipairs(listOfThings) do
         -- Use a repeat loop because Lua doesn't have 'continue'
         repeat
@@ -437,7 +441,7 @@ function Menu:renderList(listOfThings, xpos, ypos)
                 background_colour=background_colour,
                 callback=self.selectThingFromList,
             }
-            self:setupItem(item, xpos, ypos)
+            self:setupItem(item, xpos, ypos, width)
             table.insert(items, item)
             self:renderItem(item)
         until true
@@ -656,7 +660,7 @@ function Menu:getPageControls(xpos, ypos)
             ypad=1,
             xpad=1,
             text="Up",
-            text_colour=colours.lightBlue,
+            text_colour=colours.darkBlue,
             background_colour=colours.yellow,
             callback=self.pagingButton,
         }
@@ -667,7 +671,7 @@ function Menu:getPageControls(xpos, ypos)
             ypad=1,
             xpad=0,
             text="PgUp",
-            text_colour=colours.lightBlue,
+            text_colour=colours.darkBlue,
             background_colour=colours.yellow,
             callback=self.pagingButton,
         }
@@ -682,7 +686,7 @@ function Menu:getPageControls(xpos, ypos)
             ypad=1,
             xpad=1,
             text="Dn",
-            text_colour=colours.lightBlue,
+            text_colour=colours.darkBlue,
             background_colour=colours.yellow,
         }
         local PgDn = {
@@ -692,7 +696,7 @@ function Menu:getPageControls(xpos, ypos)
             ypad=1,
             xpad=0,
             text="PgDn",
-            text_colour=colours.lightBlue,
+            text_colour=colours.darkBlue,
             background_colour=colours.yellow,
         }
         table.insert(buttons, Dn1)

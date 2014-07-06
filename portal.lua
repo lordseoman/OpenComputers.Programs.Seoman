@@ -241,5 +241,6 @@ local portal = PortalCrtl:new({
             callback=function(menu, button) menu:shutdown() end,
         },
     },
+    windowSize={70, 38},
 })
 portal:run()

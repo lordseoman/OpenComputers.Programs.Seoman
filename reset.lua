@@ -1,7 +1,7 @@
 local component = require("component")
 local term = require("term")
 
-gpu = component.proxy(component.getPrimary("gpu")
+gpu = component.getPrimary("gpu")
 gpu.setForeground(0xFFFFFF)
 gpu.setBackground(0x000000)
 local x, y = gpu.maxResolution()
