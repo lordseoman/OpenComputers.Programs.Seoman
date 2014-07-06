@@ -2,7 +2,11 @@
  *
  * This is a touchscreen portal controller.
  *
- --]]
+--]]
+ 
+-- This is frustrating but necessary, clear out the cache
+package.loaded.menu = nil
+package.loaded.inventory = nil
  
 local PortalCrtl = require("menu")
 local Inventory = require("inventory")
