@@ -142,14 +142,14 @@ function Menu:findClickXY(buttons, x, y)
         self.monitor.set(10, self.windowSize[2]-4, "Click at "..x..","..y..":")
     end
     for _, button in ipairs(buttons) do
-        if self.debug then
-            message = string.format(
-                "Button %d,%d => %d, %d", button.x, button.y, button.dx, button.dy
-            )
-            self.monitor.set(26, self.windowSize[2]-4, message)
-            os.sleep(2)
-        end
         if (y >= button.y) and (y < button.dy) and (x >= button.x) and (x < button.dx) then
+            if self.debug then
+                message = string.format(
+                    "Button %d,%d => %d, %d", button.x, button.y, button.dx, button.dy
+                )
+                self.monitor.set(26, self.windowSize[2]-4, message)
+                os.sleep(2)
+            end
             return button
         end
     end
