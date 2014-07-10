@@ -140,6 +140,7 @@ function D:increment(name, count)
     else
         self[name] = current + count
     end
+    return current
 end
 
 -- make a new copy of this array
@@ -162,6 +163,28 @@ function D:copy()
         until true
     end
     return x
+end
+
+-- Returns key value pairs but skips hidden/protected attrs
+function D:iteritems()
+    if self:length() == 0 then
+        return function() end, nil, nil
+    end
+    local keys = {}
+    for n, v in pairs(self) do
+        if string.sub(k, 1, 1) ~= "_" then
+            table.insert(keys, v)
+        end
+    end
+    local function itertor(t, i)
+        i = i + 1
+        if keys[i] == nil then
+            return nil
+        else
+            return i, keys[i], self[keys[i]]
+        end
+    end
+    return iterator, self, 0
 end
 
 return D
