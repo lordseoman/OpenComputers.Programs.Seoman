@@ -23,7 +23,7 @@ component.modem.open(port)
 
 function register()
     msg = {
-        id=msqQueue:getNextId(),
+        id=msgQueue:getNextId(),
         source=component.modem.address,
         command="register",
     }
