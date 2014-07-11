@@ -18,11 +18,12 @@ local seen = {}
 local quit = false
 
 modem.open(port)
+print("Listening for commands on "..port)
 
 function dump(o, prefix)
-    if prefix == nil then prefix = "  " end
+    if prefix == nil then prefix = "" end
     if type(o) == 'table' then
-        local s = '{\n'
+        local s = '{'
         for k, v in pairs(o) do
             repeat
                 -- skip protected attributes
@@ -35,10 +36,13 @@ function dump(o, prefix)
                 if type(v) == "table" and v.__index ~= nil then
                     v = "object"
                 end
-                s = s .. prefix .. k .. ' = ' .. dump(v, prefix .. '  ') .. ',\n'
+                s = s .. '\n  ' .. k .. ' = ' .. dump(v, prefix .. '  ')
             until true
         end
-        return s .. '}\n'
+        if #s > 0 then
+            s = s .. '\n'
+        end
+        return s .. prefix .. '}'
     else
         return tostring(o)
     end
@@ -60,8 +64,7 @@ while quit == false do
     if table.contains(serverAddr, request.source) then
         if seen[request.id] == nil then
             seen[request.id] = 1
-            --print("New request: "..request.command)
-            --print(dump(request.args))
+            print("request = "..dump(request.args))
             local reply = { id=request.id, }
             if request.command == "quit" then
                 print("Quitting... bye.")
@@ -95,6 +98,7 @@ while quit == false do
     elseif request.command == "register" then
         print("New registration request.")
         table.insert(serverAddr, request.source)
+        seen[request.id] = 1
         local reply = { id=request.id, reply="Registration successful.", }
         modem.transmit(port, port, textutils.serialize(reply))
     elseif request.source ~= nil then

@@ -48,7 +48,7 @@ function sendCommand(command, ...)
 end
 
 function dump(o, prefix)
-    if prefix == nil then prefix = "  " end
+    if prefix == nil then prefix = "" end
     if type(o) == 'table' then
         local s = '{'
         for k, v in pairs(o) do
@@ -63,13 +63,13 @@ function dump(o, prefix)
                 if type(v) == "table" and v.__index ~= nil then
                     v = "object"
                 end
-                s = s .. '\n' .. prefix .. k .. ' = ' .. dump(v, prefix .. '  ') .. ',\n'
+                s = s .. '\n  ' .. k .. ' = ' .. dump(v, prefix .. '  ')
             until true
         end
-        if #s > 1 then
-            s = s .. prefix
+        if #s > 0 then
+            s = s .. '\n'
         end
-        return s .. '}\n'
+        return s .. prefix .. '}'
     else
         return tostring(o)
     end
@@ -96,8 +96,7 @@ function listenForResponses(event, dst, src, port, dist, rport, msg)
                 print("Registration "..src.." declined: "..response.error)
             end
         else
-            print("Got a reply to "..request.command..":")
-            print(dump(response.reply))
+            print("Response = "..dump(request))
         end
         if request.command == 'quit' then
             print("Removing listener")
