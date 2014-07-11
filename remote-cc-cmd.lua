@@ -5,6 +5,7 @@
  * script.
  *
 --]]
+local __version__ = "0.21"
 
 local component = require("component")
 local event = require("event")
@@ -51,6 +52,7 @@ function dump(o, prefix)
     if prefix == nil then prefix = "" end
     if type(o) == 'table' then
         local s = '{'
+        local num = 0
         for k, v in pairs(o) do
             repeat
                 -- skip protected attributes
@@ -63,10 +65,11 @@ function dump(o, prefix)
                 if type(v) == "table" and v.__index ~= nil then
                     v = "object"
                 end
-                s = s .. '\n  ' .. k .. ' = ' .. dump(v, prefix .. '  ')
+                num = num + 1
+                s = s .. '\n  ' .. prefix .. k .. ' = ' .. dump(v, prefix .. '  ')
             until true
         end
-        if #s > 0 then
+        if num > 0 then
             s = s .. '\n'
         end
         return s .. prefix .. '}'
