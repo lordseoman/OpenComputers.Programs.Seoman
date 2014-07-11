@@ -183,6 +183,9 @@ function OCPM:getURL(url)
 end
 
 function OCPM:download(url, path, force)
+    -- add a random number as a query to remove caching.
+    math.randomseed(os.time())
+    url = url .. "?nocache=" .. tostring(math.random(1000000000, 9999999999999))
     if force then
         wget("-fq", url, path)
     else
