@@ -1,4 +1,5 @@
 
+local __version__ = "0.11"
 local D = {}
 
 function D:new(o)
@@ -172,7 +173,7 @@ function D:iteritems()
     end
     local keys = {}
     for n, v in pairs(self) do
-        if string.sub(k, 1, 1) ~= "_" then
+        if string.sub(n, 1, 1) ~= "_" then
             table.insert(keys, v)
         end
     end
