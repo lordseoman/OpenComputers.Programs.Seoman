@@ -89,7 +89,7 @@ function OCPM:parseArgs(...)
         for _, repo in ipairs(self.repos) do
             self:updatePackages(repo)
         end
-    elseif args[1] == "--reinstall" then
+    elseif args[1] == "reinstall" then
         print("Forcing a re-install of OCPM.")
         self:download(self.source_url, "/usr/bin/ocpm.lua", true)
     end
