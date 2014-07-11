@@ -50,7 +50,7 @@ end
 function dump(o, prefix)
     if prefix == nil then prefix = "  " end
     if type(o) == 'table' then
-        local s = '{\n'
+        local s = '{'
         for k, v in pairs(o) do
             repeat
                 -- skip protected attributes
@@ -63,8 +63,11 @@ function dump(o, prefix)
                 if type(v) == "table" and v.__index ~= nil then
                     v = "object"
                 end
-                s = s .. prefix .. k .. ' = ' .. dump(v, prefix .. '  ') .. ',\n'
+                s = s .. '\n' .. prefix .. k .. ' = ' .. dump(v, prefix .. '  ') .. ',\n'
             until true
+        end
+        if #s > 1 then
+            s = s .. prefix
         end
         return s .. '}\n'
     else
@@ -76,7 +79,7 @@ function listenForResponses(event, dst, src, port, dist, rport, msg)
     local retVal = true
     local response = serial.unserialize(msg)
     request = msgQueue[response.id]
-    print(dump(response))
+    --print(dump(response))
     if request == nil then
         --print("Got response to non-existant request ("..response.id.."), ignoring.")
     elseif request.reply ~= nil then
@@ -116,7 +119,10 @@ function waitForResponses(timeout)
                 -- on the same request.
                 request.done = true
                 -- should pcall this one later.!!
-                request.callback(request)
+                if type(request.callback) == "function" then
+                    request.callback(request)
+                end
+                -- And remove the request from the message queue
                 msgQueue[msgId] = nil
                 -- reset the timeout value whenever something comes back
                 tries = 0

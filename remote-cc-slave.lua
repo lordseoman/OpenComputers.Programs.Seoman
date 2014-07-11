@@ -73,6 +73,10 @@ while quit == false do
             elseif request.command == "echo" then
                 print("Echoing request.")
                 reply.reply = request.args
+            elseif request.command == "unregister" then
+                print("Unregistration request.")
+                table.remove(serverAddr, request.source)
+                reply.reply = "Source removed."
             elseif request.command == "peripheral_call" then
                 print("Calling method on peripheral.")
                 if peripheral.isPresent(request.args[1]) == false then
@@ -94,7 +98,7 @@ while quit == false do
         local reply = { id=request.id, reply="Registration successful.", }
         modem.transmit(port, port, textutils.serialize(reply))
     elseif request.source ~= nil then
-        print("Ignoring reques from "..request.source)
+        print("Ignoring request from "..request.source)
     else
         print("Uncommon message: "..request)
     end
