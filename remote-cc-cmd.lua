@@ -27,19 +27,19 @@ function register()
         id=msgQueue:getNextId(),
         source=component.modem.address,
         command="register",
-        callback=function(reply)
-            print ("Running callback..")
-            slaveAddr = request.reply.source
-            if type(request.reply.reply) == "table" then
-                print("From ".. request.reply.source ..": "..request.reply.reply[1])
-                msgQueue:increment("_msgId", request.reply.reply[2])
-            else
-                print("From ".. request.reply.source ..": "..request.reply.reply)
-            end
-        end
     }
-    msgQueue[msg.id] = msg
     component.modem.broadcast(port, serial.serialize(msg))
+    msg.callback=function(reply)
+        print ("Running callback..")
+        slaveAddr = request.reply.source
+        if type(request.reply.reply) == "table" then
+            print("From ".. request.reply.source ..": "..request.reply.reply[1])
+            msgQueue:increment("_msgId", request.reply.reply[2])
+        else
+            print("From ".. request.reply.source ..": "..request.reply.reply)
+        end
+    end
+    msgQueue[msg.id] = msg
 end
 
 function unregister()
