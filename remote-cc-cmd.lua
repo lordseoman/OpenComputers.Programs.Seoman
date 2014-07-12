@@ -93,6 +93,8 @@ function dump(o, prefix)
             s = s .. '\n' .. prefix
         end
         return s .. '}'
+    elseif type(o) == "string" then
+        return '"'..o..'"'
     else
         return tostring(o)
     end
@@ -113,7 +115,7 @@ function listenForResponses(event, dst, src, port, dist, rport, msg)
         if response.error ~= nil then
             print("Error from remote: "..response.error)
         else
-            print("Response = "..dump(request))
+            print("Request = "..dump(request))
         end
         if request.command == 'quit' then
             print("Removing listener")
