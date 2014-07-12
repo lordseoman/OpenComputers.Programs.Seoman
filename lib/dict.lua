@@ -14,28 +14,33 @@ function D:new(o)
     return o
 end
 
-local function dump(o, prefix)
+function dump(o, prefix)
     if prefix == nil then prefix = "" end
     if type(o) == 'table' then
-        local s = '{\n'
+        local s = '{'
+        local num = 0
         for k, v in pairs(o) do
             repeat
                 -- skip protected attributes
                 if string.sub(k, 1, 1) == "_" then
                     break
                 end
-                if type(k) ~= 'number' then 
+                if type(k) ~= 'number' then
                     k = '"' .. k .. '"'
                 end
                 if type(v) == "table" and v.__index ~= nil then
                     v = "object"
                 end
-                s = s .. prefix .. k .. ' = ' .. dump(v, prefix .. ' ') .. ',\n'
+                num = num + 1
+                s = s .. '\n  ' .. prefix .. k .. ' = ' .. dump(v, prefix .. '  ')
             until true
         end
-        return s .. prefix .. '}\n'
+        if num > 0 then
+            s = s .. '\n' .. prefix
+        end
+        return s .. '}'
     else
-        return prefix .. tostring(o)
+        return tostring(o)
     end
 end
 
@@ -173,7 +178,9 @@ function D:iteritems()
     end
     local keys = {}
     for n, v in pairs(self) do
-        if type(n) == "string" and string.sub(n, 1, 1) ~= "_" then
+        if type(n) == "number" then
+            table.insert(keys, v)
+        elseif type(n) == "string" and string.sub(n, 1, 1) ~= "_" and type(v) ~= "function" then
             table.insert(keys, v)
         end
     end
