@@ -5,7 +5,7 @@
  * script.
  *
 --]]
-local __version__ = "0.21"
+local __version__ = "0.22"
 
 local component = require("component")
 local event = require("event")
@@ -93,8 +93,13 @@ function listenForResponses(event, dst, src, port, dist, rport, msg)
             print("Error running remote command: "..response.error)
         elseif request.command == "register" then
             if response.reply ~= nil then
-                print("From "..src..": "..response.reply)
                 slaveAddr = src
+                if type(response.reply) == "table" then
+                    print("From "..src..": "..response.reply[1])
+                    msgQueue:increment(response.reply[2])
+                else
+                    print("From "..src..": "..response.reply)
+                end
             else
                 print("Registration "..src.." declined: "..response.error)
             end
@@ -152,6 +157,7 @@ if slaveAddr ~= nil then
     waitForResponses()
     print("sending quit")
     sendCommand("quit")
+    waitForResponses()
 else
     print("Registration failed, removing listener..")
     event.ignore("modem_message", listenForResponses)

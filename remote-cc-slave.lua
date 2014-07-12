@@ -24,6 +24,7 @@ function dump(o, prefix)
     if prefix == nil then prefix = "" end
     if type(o) == 'table' then
         local s = '{'
+        local num = 0
         for k, v in pairs(o) do
             repeat
                 -- skip protected attributes
@@ -36,10 +37,11 @@ function dump(o, prefix)
                 if type(v) == "table" and v.__index ~= nil then
                     v = "object"
                 end
-                s = s .. '\n  ' .. k .. ' = ' .. dump(v, prefix .. '  ')
+                num = num + 1
+                s = s .. '\n  ' .. prefix .. k .. ' = ' .. dump(v, prefix .. '  ')
             until true
         end
-        if #s > 0 then
+        if num > 0 then
             s = s .. '\n'
         end
         return s .. prefix .. '}'
@@ -61,9 +63,11 @@ rawset(table, "contains", contains)
 while quit == false do
     local event, side, port, dst, msg = os.pullEvent("modem_message")
     local request = textutils.unserialize(msg)
-    if table.contains(serverAddr, request.source) then
-        if seen[request.id] == nil then
-            seen[request.id] = 1
+    if serverAddr[request.source] ~= nil then
+        local msgQueue = serverAddr[request.source]
+        if msgQueue[request.id] == nil then
+            msgQueue[request.id] = request.command
+            msgQueue[maxId] = math.max(request.id, msgQueue[maxId])
             print("request = "..dump(request.args))
             local reply = { id=request.id, }
             if request.command == "quit" then
@@ -72,13 +76,13 @@ while quit == false do
                 reply.reply = "Okay, quitting."
             elseif request.command == "register" then
                 print("Source already registered.")
-                reply.reply = "Registration successful."
+                reply.reply = {"Already registered.", msgQueue[maxId]
             elseif request.command == "echo" then
                 print("Echoing request.")
                 reply.reply = request.args
             elseif request.command == "unregister" then
                 print("Unregistration request.")
-                table.remove(serverAddr, request.source)
+                serverAddr[request.source] = nil
                 reply.reply = "Source removed."
             elseif request.command == "peripheral_call" then
                 print("Calling method on peripheral.")
@@ -97,8 +101,7 @@ while quit == false do
         end
     elseif request.command == "register" then
         print("New registration request.")
-        table.insert(serverAddr, request.source)
-        seen[request.id] = 1
+        serverAddr[request.source] = { request.id, }
         local reply = { id=request.id, reply="Registration successful.", }
         modem.transmit(port, port, textutils.serialize(reply))
     elseif request.source ~= nil then
