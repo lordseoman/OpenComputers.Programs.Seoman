@@ -14,7 +14,6 @@ end
 
 local port = 221
 local serverAddr = {}
-local seen = {}
 local quit = false
 
 modem.open(port)
@@ -65,25 +64,25 @@ while quit == false do
     local request = textutils.unserialize(msg)
     if serverAddr[request.source] ~= nil then
         local msgQueue = serverAddr[request.source]
-        if msgQueue[request.id] == nil then
+        local reply = { id=request.id, }
+        if request.command == 'unregister' then
+            print("Unregistration request.")
+            serverAddr[request.source] = nil
+            reply.reply = "Source removed."
+        elseif msgQueue[request.id] == nil then
             msgQueue[request.id] = request.command
-            msgQueue[maxId] = math.max(request.id, msgQueue[maxId])
+            msgQueue["maxId"] = math.max(request.id, msgQueue["maxId"])
             print("request = "..dump(request.args))
-            local reply = { id=request.id, }
             if request.command == "quit" then
                 print("Quitting... bye.")
                 quit = true
                 reply.reply = "Okay, quitting."
             elseif request.command == "register" then
                 print("Source already registered.")
-                reply.reply = {"Already registered.", msgQueue[maxId]
+                reply.reply = {"Already registered.", msgQueue["maxId"],}
             elseif request.command == "echo" then
                 print("Echoing request.")
                 reply.reply = request.args
-            elseif request.command == "unregister" then
-                print("Unregistration request.")
-                serverAddr[request.source] = nil
-                reply.reply = "Source removed."
             elseif request.command == "peripheral_call" then
                 print("Calling method on peripheral.")
                 if peripheral.isPresent(request.args[1]) == false then
@@ -97,11 +96,15 @@ while quit == false do
                     end
                 end
             end
+        end
+        if reply.reply ~= nil or reply.error ~= nil then
             modem.transmit(port, port, textutils.serialize(reply))
         end
     elseif request.command == "register" then
         print("New registration request.")
-        serverAddr[request.source] = { request.id, }
+        serverAddr[request.source] = {}
+        serverAddr[request.source][request.id] = request.command
+        serverAddr[request.source]["maxId"] = request.id
         local reply = { id=request.id, reply="Registration successful.", }
         modem.transmit(port, port, textutils.serialize(reply))
     elseif request.source ~= nil then

@@ -5,7 +5,7 @@
  * script.
  *
 --]]
-local __version__ = "0.22"
+local __version__ = "0.23"
 
 local component = require("component")
 local event = require("event")
@@ -27,6 +27,26 @@ function register()
         id=msgQueue:getNextId(),
         source=component.modem.address,
         command="register",
+        callback=function(reply)
+            print ("Running callback..")
+            slaveAddr = request.reply.source
+            if type(request.reply.reply) == "table" then
+                print("From ".. request.reply.source ..": "..request.reply.reply[1])
+                msgQueue:increment("_msgId", request.reply.reply[2])
+            else
+                print("From ".. request.reply.source ..": "..request.reply.reply)
+            end
+        end
+    }
+    msgQueue[msg.id] = msg
+    component.modem.broadcast(port, serial.serialize(msg))
+end
+
+function unregister()
+    msg = {
+        id=msgQueue:getNextId(),
+        source=component.modem.address,
+        command="unregister",
     }
     msgQueue[msg.id] = msg
     component.modem.broadcast(port, serial.serialize(msg))
@@ -70,9 +90,9 @@ function dump(o, prefix)
             until true
         end
         if num > 0 then
-            s = s .. '\n'
+            s = s .. '\n' .. prefix
         end
-        return s .. prefix .. '}'
+        return s .. '}'
     else
         return tostring(o)
     end
@@ -89,20 +109,9 @@ function listenForResponses(event, dst, src, port, dist, rport, msg)
         --print("Got a reply already, dropping.")
     else
         request.reply = response
+        request.reply.source = src
         if response.error ~= nil then
-            print("Error running remote command: "..response.error)
-        elseif request.command == "register" then
-            if response.reply ~= nil then
-                slaveAddr = src
-                if type(response.reply) == "table" then
-                    print("From "..src..": "..response.reply[1])
-                    msgQueue:increment(response.reply[2])
-                else
-                    print("From "..src..": "..response.reply)
-                end
-            else
-                print("Registration "..src.." declined: "..response.error)
-            end
+            print("Error from remote: "..response.error)
         else
             print("Response = "..dump(request))
         end
@@ -142,13 +151,11 @@ end
 
 event.listen("modem_message", listenForResponses)
 
+print("unregistering first, just in case.")
+unregister()
 print("registering..")
 register()
-local tries = 0
-while slaveAddr == nil and tries < 5 do
-    os.sleep(1)
-    tries = tries + 1
-end
+waitForResponses()
 if slaveAddr ~= nil then
     print("sending echo")
     sendCommand("echo", "simon", "is", 1)
