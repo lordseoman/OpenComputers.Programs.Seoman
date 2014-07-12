@@ -177,7 +177,7 @@ function D:iteritems()
             table.insert(keys, v)
         end
     end
-    local function itertor(t, i)
+    local function iterator(t, i)
         i = i + 1
         if keys[i] == nil then
             return nil
