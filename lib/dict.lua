@@ -179,9 +179,9 @@ function D:iteritems()
     local keys = {}
     for n, v in pairs(self) do
         if type(n) == "number" then
-            table.insert(keys, v)
+            table.insert(keys, n)
         elseif type(n) == "string" and string.sub(n, 1, 1) ~= "_" and type(v) ~= "function" then
-            table.insert(keys, v)
+            table.insert(keys, n)
         end
     end
     local function iterator(t, i)
