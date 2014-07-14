@@ -1,4 +1,36 @@
 
+function dump(o, prefix)
+    if prefix == nil then prefix = "" end
+    if type(o) == 'table' then
+        local s = '{'
+        local num = 0
+        for k, v in pairs(o) do
+            repeat
+                -- skip protected attributes
+                if string.sub(k, 1, 1) == "_" then
+                    break
+                end
+                if type(k) ~= 'number' then
+                    k = '"' .. k .. '"'
+                end
+                if type(v) == "table" and v.__index ~= nil then
+                    v = "object"
+                end
+                num = num + 1
+                s = s .. '\n  ' .. prefix .. k .. ' = ' .. dump(v, prefix .. '  ')
+            until true
+        end
+        if num > 0 then
+            s = s .. '\n' .. prefix
+        end
+        return s .. '}'
+    elseif type(o) == "string" then
+        return '"'..o..'"'
+    else
+        return tostring(o)
+    end
+end
+
 local function copy(self, destiny)
     if destiny == nil then destiny = {} end
     for k, v in pairs(self) do
@@ -32,7 +64,7 @@ local function contains(self, id)
 end
 rawset(table, "contains", contains)
 
-function extend(t1, t2)
+local function extend(t1, t2)
     for _, v2 in ipairs(t2) do
         table.insert(t1, v2)
     end 
@@ -40,7 +72,7 @@ function extend(t1, t2)
 end
 rawset(table, "extend", extend)
 
-function rpad(s, length, char)
+local function rpad(s, length, char)
     if char == nil then 
         char = " "
     elseif #char > 1 then
@@ -54,7 +86,7 @@ function rpad(s, length, char)
 end
 rawset(string, "rpad", rpad)
 
-function extend_new(t1, t2)
+local function extend_new(t1, t2)
     result = {}
     for _, v1 in ipairs(t1) do
         table.insert(results, v1)
@@ -66,14 +98,14 @@ function extend_new(t1, t2)
 end         
 rawset(table, "extend_new", extend_new)
 
-function foreach(t1, func, ...)
+local function foreach(t1, func, ...)
     for _, v in ipairs(t1) do
         func(v, ...)
     end
 end
 rawset(table, "foreach", foreach)
 
-function split(str, pat)
+local function split(str, pat)
     local t = {}  -- NOTE: use {n = 0} in Lua-5.0
     local fpat = "(.-)" .. pat
     local last_end = 1

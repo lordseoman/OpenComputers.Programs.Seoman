@@ -1,3 +1,10 @@
+--[[
+ *
+ * This provides some Dict style methods.
+ *
+--]]
+
+require("functions")
 
 local __version__ = "0.12"
 local D = {}
@@ -12,36 +19,6 @@ function D:new(o)
     setmetatable(o, self)
     self.__index = self
     return o
-end
-
-function dump(o, prefix)
-    if prefix == nil then prefix = "" end
-    if type(o) == 'table' then
-        local s = '{'
-        local num = 0
-        for k, v in pairs(o) do
-            repeat
-                -- skip protected attributes
-                if string.sub(k, 1, 1) == "_" then
-                    break
-                end
-                if type(k) ~= 'number' then
-                    k = '"' .. k .. '"'
-                end
-                if type(v) == "table" and v.__index ~= nil then
-                    v = "object"
-                end
-                num = num + 1
-                s = s .. '\n  ' .. prefix .. k .. ' = ' .. dump(v, prefix .. '  ')
-            until true
-        end
-        if num > 0 then
-            s = s .. '\n' .. prefix
-        end
-        return s .. '}'
-    else
-        return tostring(o)
-    end
 end
 
 function D:dump(prefix)
