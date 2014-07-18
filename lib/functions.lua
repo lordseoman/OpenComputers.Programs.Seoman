@@ -130,7 +130,7 @@ local Func = { colourNames={
     "magenta", "lightBlue", "cyan", "purple",
 }, }
 
-function Func:require(filename)
+function Func.require(filename)
     if fs.exists(filename) == false then
         filename = fs.combine("lib", filename)
     end
@@ -153,7 +153,7 @@ local function search(k, plist)
     end
 end
 
-function Func:createClass(...)
+function Func.createClass(...)
     local c = {}        -- new class
 
     -- class will search for each method in the list of its
@@ -174,7 +174,55 @@ function Func:createClass(...)
     return c
 end
 
-function Func:zip(t1, t2, func)
+function Func.inheritsFrom( baseClass )
+
+    local new_class = {}
+    local class_mt = { __index = new_class }
+
+    function new_class:new()
+        local newinst = {}
+        setmetatable( newinst, class_mt )
+        return newinst
+    end
+
+    if nil ~= baseClass then
+        setmetatable( new_class, { __index = baseClass } )
+    end
+    --
+    -- Implementation of additional OO properties starts here --
+    --
+    -- Return the class object of the instance
+    function new_class:class()
+        return new_class
+    end
+    --
+    -- Return the super class object of the instance
+    function new_class:superClass()
+        return baseClass
+    end
+    --
+    -- Return true if the caller is an instance of theClass
+    function new_class:isa( theClass )
+        local b_isa = false
+
+        local cur_class = new_class
+
+        while ( nil ~= cur_class ) and ( false == b_isa ) do
+            if cur_class == theClass then
+                b_isa = true
+            else
+                cur_class = cur_class:superClass()
+            end
+        end
+
+        return b_isa
+    end
+
+    return new_class
+end
+
+
+function Func.zip(t1, t2, func)
     if func == nil then
         func = function ( x1, x2 ) return { x1, x2 } end
     end
