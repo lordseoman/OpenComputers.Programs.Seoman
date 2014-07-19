@@ -185,7 +185,7 @@ function Client:listener()
         end
         -- Get the original request from our Queue, the ID will be unique to us
         -- so if it's not on our queue it's probably someone elses.
-        local request = self:msgQueue[response.id]
+        local request = self.msgQueue[response.id]
         if request == nil then
             if self.debug then
                 print("Not our response ("..response.id.."), ignoring.")
