@@ -365,7 +365,7 @@ function Scheduler:run(limit)
     local params
     local timeout = 0.2
     while self:count() > limit do
-        if timeout == nil then timeout = 0.2
+        if timeout == nil then timeout = 0.2 end
         -- Use raw events so we capture the "terminate" and tell the threads
         -- to shutdown
         params = { self:pullSignal(timeout) }
