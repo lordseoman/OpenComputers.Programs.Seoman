@@ -54,10 +54,10 @@ function Client:loadConfig()
         -- Port to send requests on and receive response on
         port = 221,
         -- Address of the modem or link card to send requests through
-        modem_address = "",
+        modem_address = "fde263a8",
         -- Name of the service we are using, this should be the same as the 
         -- server is registered with.
-        service_name = "",
+        service_name = "remote_command",
     }
 end
 

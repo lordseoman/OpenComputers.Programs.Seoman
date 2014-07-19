@@ -39,7 +39,7 @@ end
 
 function TestClient:test_2_echo()
     print("Echo with wait test..")
-    local mgs = { barnie=1, 5="suni",}
+    local msg = { barnie=1, [5]="suni",}
     local req = self.c:newRequest("echo", msg)
     local res = self.c:send(req)
     assertEquals(res.id, req.id)
