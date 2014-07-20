@@ -11,12 +11,12 @@ package.loaded.scheduler = nil
 package.loaded.client = nill
 
 local func = require("functions")
-local scheduler = require("scheduler")
+local Scheduler = require("scheduler")
 local Client = require("client")
 local LuaUnit = require("luaunit")
 
 local MyClient = func.inheritsFrom(Client)
-local MyScheduler = scheduler:new{}
+local scheduler = Scheduler:new{}
 local TestClient = {}
 
 function TestClient:setup()
