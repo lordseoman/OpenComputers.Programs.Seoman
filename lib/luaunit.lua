@@ -524,7 +524,7 @@ function LuaUnit:runTestClassByName(aClassName)
         for methodName, method in orderedPairs(classInstance) do
             --for methodName, method in classInstance do
             local mungeName = methodName:lower()
-            if LuaUnit.isFunction(method) and mungeName:sub(1, 4) == "test") then
+            if LuaUnit.isFunction(method) and mungeName:sub(1, 4) == "test" then
                 LuaUnit:runTestMethodName(aClassName..':'..methodName, classInstance )
             end
         end

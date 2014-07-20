@@ -16,8 +16,8 @@ local Client = require("client")
 local LuaUnit = require("luaunit")
 
 local MyClient = func.inheritsFrom(Client)
-
-TestClient = {}
+local MyScheduler = scheduler:new{}
+local TestClient = {}
 
 function TestClient:setup()
     print("Called setup.")
@@ -46,3 +46,5 @@ function TestClient:test_2_echo()
     assertEquals(req.target, res.source)
     assertEquals(res.reply, msg)
 end
+
+LuaUnit:run(TestClient)
