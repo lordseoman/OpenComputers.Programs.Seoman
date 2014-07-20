@@ -49,7 +49,12 @@ local function copy(self, destiny)
             end
         until true
     end
-    setmetatable(destiny, getmetatable(self))
+    -- only set the metatable if the original had one, otherwise we would
+    -- be removing the existing one on `destiny` or causing an `error`
+    local _meta = getmetatable(self)
+    if _meta ~= nil then
+        setmetatable(destiny, _meta)
+    end
     return destiny
 end
 rawset(table, "copy", copy)
