@@ -367,203 +367,224 @@ local UnitResult = { -- class
 
 -- class UnitResult end
 
--- LUAUNIT CLASS ---------------------------------------------------------------
+-----------------------------------------------------------------
+--
+-- The TestRunner is responsible to collecting the tests to run
+-- and thenn running each in turn. 
+--
+-- Signature:
+--
+--          unittest:run(TestSuite1, TestSuite2, ...)
+--          unittest:run(test1, test2, TestSuite1, ...)
 --
 local LuaUnit = {
     result = UnitResult,
     _VERSION = "2.1"
 }
-    -- Sets the verbosity level
-    -- @param lvl {number} If greater than 0 there will be verbose output. Defaults to 0
-    function LuaUnit:setVerbosity(lvl)
-        self.result.verbosity = lvl or 0
-        assert("number" == type(self.result.verbosity), ("bad argument #1 to 'setVerbosity' (number expected, got %s)"):format(type(self.result.verbosity)))
+
+function LuaUnit:setVerbosity(lvl)
+    if lvl == nil then 
+        lvl = 0
+    elseif type(lvl) ~= "number" then
+        error("Expected number for verbosity, got "..type(lvl))
+    elseif lvl < 0 then
+        error("verbosity must be > 0")
     end
-    -- Other alias's
-    LuaUnit.set_verbosity = LuaUnit.setVerbosity
-    LuaUnit.SetVerbosity = LuaUnit.setVerbosity
+    self.result.verbosity = lvl
+end
     
-    -- Split text into a list consisting of the strings in text,
-    -- separated by strings matching delimiter (which may be a pattern). 
-    -- example: strsplit(",%s*", "Anna, Bob, Charlie,Dolores")
-    function LuaUnit.strsplit(delimiter, text)
-        local list = {}
-        local pos = 1
-        if string.find("", delimiter, 1) then -- this would result in endless loops
-            error("delimiter matches empty string!")
-        end
-        while 1 do
-            local first, last = string.find(text, delimiter, pos)
-            if first then -- found?
-                table.insert(list, string.sub(text, pos, first-1))
-                pos = last+1
-            else
-                table.insert(list, string.sub(text, pos))
-                break
-            end
-        end
-        return list
+-- Split text into a list consisting of the strings in text,
+-- separated by strings matching delimiter (which may be a pattern). 
+-- example: strsplit(",%s*", "Anna, Bob, Charlie,Dolores")
+function LuaUnit.strsplit(delimiter, text)
+    local list = {}
+    local pos = 1
+    if string.find("", delimiter, 1) then -- this would result in endless loops
+        error("delimiter matches empty string!")
     end
-
-    -- Type check functions
-    for _, typename in ipairs(typenames) do
-        local tName = typename:lower()
-        LuaUnit["is"..typename] = function(x)
-            return type(x) == tName
-        end
-        -- Alias to lower underscore naming
-        LuaUnit["is_"..tName] = LuaUnit["is"..typename]
-    end
-    
-    -- Use me to wrap a set of functions into a Runnable test class:
-    -- TestToto = wrapFunctions( f1, f2, f3, f3, f5 )
-    -- Now, TestToto will be picked up by LuaUnit:run()
-    function LuaUnit.wrapFunctions(...)
-        local testClass, testFunction
-        testClass = {}
-        local function storeAsMethod(idx, testName)
-            testFunction = _G[testName]
-            testClass[testName] = testFunction
-        end
-                for i, v in ipairs {...} do storeAsMethod(i, v) end
-        
-        return testClass
-    end
-    -- Other alias's
-    LuaUnit.wrap_functions = LuaUnit.wrapFunctions
-    LuaUnit.WrapFunctions = LuaUnit.wrapFunctions
-
-    function LuaUnit.strip_luaunit_stack(stack_trace)
-        local stack_list = LuaUnit.strsplit( "\n", stack_trace )
-        local strip_end = nil
-        for i = #stack_list,1,-1 do
-            -- a bit rude but it works !
-            if string.find(stack_list[i],"[C]: in function `xpcall'",0,true)
-                then
-                strip_end = i - 2
-            end
-        end
-        if strip_end then
-            table.setn( stack_list, strip_end )
-        end
-        local stack_trace = table.concat( stack_list, "\n" )
-        return stack_trace
-    end
-
-    function LuaUnit:runTestMethod(aName, aClassInstance, aMethod)
-        local ok, errorMsg
-        -- example: runTestMethod( 'TestToto:test1', TestToto, TestToto.testToto(self) )
-        LuaUnit.result:startTest(aName)
-
-        -- run setUp first(if any)
-        if self.isFunction( aClassInstance.setUp) then
-            aClassInstance:setUp()
-        elseif self.isFunction( aClassInstance.Setup) then
-            aClassInstance:Setup()
-        elseif self.isFunction( aClassInstance.setup) then
-            aClassInstance:setup()
-        end
-
-        local function err_handler(e)
-            return e..'\n'..debug.traceback()
-        end
-
-        -- run testMethod()
-        local ok, errorMsg = xpcall( aMethod, err_handler )
-        if not ok then
-            errorMsg  = self.strip_luaunit_stack(errorMsg)
-            LuaUnit.result:addFailure( errorMsg )
-        end
-
-        -- lastly, run tearDown(if any)
-        if self.isFunction(aClassInstance.tearDown) then
-            aClassInstance:tearDown()
-        elseif self.isFunction(aClassInstance.TearDown) then
-            aClassInstance:TearDown()
-        elseif self.isFunction(aClassInstance.teardown) then
-            aClassInstance:teardown()
-        end
-
-        self.result:endTest()
-    end
-
-    function LuaUnit:runTestMethodName(methodName, classInstance)
-        -- example: runTestMethodName( 'TestToto:testToto', TestToto )
-        local methodInstance = loadstring(methodName .. '()')
-        LuaUnit:runTestMethod(methodName, classInstance, methodInstance)
-    end
-
-    function LuaUnit:runTestClassByName(aClassName)
-        --assert("table" == type(aClassName), ("bad argument #1 to 'runTestClassByName' (string expected, got %s). Make sure you are not trying to just pass functions not part of a class."):format(type(aClassName)))
-        -- example: runTestMethodName( 'TestToto' )
-        local hasMethod, methodName, classInstance
-        hasMethod = string.find(aClassName, ':' )
-        if hasMethod then
-            methodName = string.sub(aClassName, hasMethod+1)
-            aClassName = string.sub(aClassName,1,hasMethod-1)
-        end
-        classInstance = _G[aClassName]
-        if "table" ~= type(classInstance) then
-            error("No such class: "..aClassName)
-        end
-
-        LuaUnit.result:startClass( aClassName )
-
-        if hasMethod then
-            if not classInstance[ methodName ] then
-                error( "No such method: "..methodName )
-            end
-            LuaUnit:runTestMethodName( aClassName..':'.. methodName, classInstance )
+    while 1 do
+        local first, last = string.find(text, delimiter, pos)
+        if first then -- found?
+            table.insert(list, string.sub(text, pos, first-1))
+            pos = last+1
         else
-            -- run all test methods of the class
-            for methodName, method in orderedPairs(classInstance) do
-            --for methodName, method in classInstance do
-                if LuaUnit.isFunction(method) and (string.sub(methodName, 1, 4) == "test" or string.sub(methodName, 1, 4) == "Test") then
-                    LuaUnit:runTestMethodName( aClassName..':'.. methodName, classInstance )
-                end
-            end
+            table.insert(list, string.sub(text, pos))
+            break
         end
     end
+    return list
+end
 
-    function LuaUnit:run(...)
-        -- Run some specific test classes.
-        -- If no arguments are passed, run the class names specified on the
-        -- command line. If no class name is specified on the command line
-        -- run all classes whose name starts with 'Test'
-        --
-        -- If arguments are passed, they must be strings of the class names 
-        -- that you want to run
-        local args = {...}
-        if #args > 0 then
-            for i, v in ipairs(args) do LuaUnit.runTestClassByName(i, v) end
-        else 
-            if argv and #argv > 0 then
-                -- Run files passed on the command line
-                for i, v in ipairs(argv) do 
-                    LuaUnit.runTestClassByName(i, v) 
-                end
-            else
-                -- create the list before. If you do not do it now, you
-                -- get undefined result because you modify _G while iterating
-                -- over it.
-                local testClassList = {}
-                for key, val in pairs(_G) do 
-                    if "table" == type(val) then
-                        print (val)
-                        if string.sub(key, 1, 4) == "Test" or string.sub(key, 1, 4) == "test" then
-                            table.insert( testClassList, key )
-                        end
-                    end
-                end
-                for i, val in orderedPairs(testClassList) do 
-                    LuaUnit:runTestClassByName(val)
-                end
+-- Type check functions
+for _, typename in ipairs(typenames) do
+    local tName = typename:lower()
+    LuaUnit["is"..typename] = function(x)
+        return type(x) == tName
+    end
+    -- Alias to lower underscore naming
+    LuaUnit["is_"..tName] = LuaUnit["is"..typename]
+end
+
+-- Use me to wrap a set of functions into a Runnable test class:
+-- TestToto = wrapFunctions( f1, f2, f3, f3, f5 )
+-- Now, TestToto will be picked up by LuaUnit:run()
+function LuaUnit.wrapFunctions(...)
+    local testClass, testFunction
+    testClass = {}
+    local function storeAsMethod(idx, testName)
+        testFunction = _G[testName]
+        testClass[testName] = testFunction
+    end
+    for i, v in ipairs {...} do 
+        storeAsMethod(i, v) 
+    end
+    return testClass
+end
+-- Other alias's
+LuaUnit.wrap_functions = LuaUnit.wrapFunctions
+LuaUnit.WrapFunctions = LuaUnit.wrapFunctions
+
+function LuaUnit.strip_luaunit_stack(stack_trace)
+    local stack_list = LuaUnit.strsplit( "\n", stack_trace )
+    local strip_end = nil
+    for i = #stack_list,1,-1 do
+        -- a bit rude but it works !
+        if string.find(stack_list[i],"[C]: in function `xpcall'",0,true) then
+            strip_end = i - 2
+        end
+    end
+    if strip_end then
+        table.setn( stack_list, strip_end )
+    end
+    local stack_trace = table.concat( stack_list, "\n" )
+    return stack_trace
+end
+
+function LuaUnit:runTestMethod(aName, aClassInstance, aMethod)
+    local ok, errorMsg
+    -- example: runTestMethod( 'TestToto:test1', TestToto, TestToto.testToto )
+    LuaUnit.result:startTest(aName)
+    -- run setUp first(if any)
+    if self.isFunction( aClassInstance.setUp) then
+        aClassInstance:setUp()
+    elseif self.isFunction( aClassInstance.Setup) then
+        aClassInstance:Setup()
+    elseif self.isFunction( aClassInstance.setup) then
+        aClassInstance:setup()
+    end
+    local function err_handler(e)
+        return e..'\n'..debug.traceback()
+    end
+    -- run testMethod()
+    local ok, errorMsg = xpcall( aMethod, err_handler )
+    if not ok then
+        errorMsg  = self.strip_luaunit_stack(errorMsg)
+        LuaUnit.result:addFailure( errorMsg )
+    end
+    -- lastly, run tearDown(if any)
+    if self.isFunction(aClassInstance.tearDown) then
+        aClassInstance:tearDown()
+    elseif self.isFunction(aClassInstance.TearDown) then
+        aClassInstance:TearDown()
+    elseif self.isFunction(aClassInstance.teardown) then
+        aClassInstance:teardown()
+    end
+    self.result:endTest()
+end
+
+--          runTestMethodName( 'TestToto:testToto', TestToto )
+--
+function LuaUnit:runTestMethodName(methodName, classInstance)
+    local methodInstance = loadstring(methodName .. '()')
+    LuaUnit:runTestMethod(methodName, classInstance, methodInstance)
+end
+
+--          runTestMethodName( 'TestToto' )
+--          runTestMethodName( 'TestToto:test1' )
+--
+function LuaUnit:runTestClassByName(aClassName)
+    local hasMethod, methodName, classInstance
+    hasMethod = string.find(aClassName, ':' )
+    if hasMethod then
+        methodName = string.sub(aClassName, hasMethod+1)
+        aClassName = string.sub(aClassName, 1, hasMethod-1)
+    end
+    classInstance = _G[aClassName]
+    if "table" ~= type(classInstance) then
+        error("No such class: "..aClassName)
+    end
+    LuaUnit.result:startClass( aClassName )
+    if hasMethod then
+        if not classInstance[ methodName ] then
+            error( "No such method: "..methodName )
+        end
+        LuaUnit:runTestMethodName( aClassName..':'.. methodName, classInstance )
+    else
+        -- run all test methods of the class
+        for methodName, method in orderedPairs(classInstance) do
+            --for methodName, method in classInstance do
+            local mungeName = methodName:lower()
+            if LuaUnit.isFunction(method) and mungeName:sub(1, 4) == "test") then
+                LuaUnit:runTestMethodName(aClassName..':'..methodName, classInstance )
             end
         end
-        return LuaUnit.result:displayFinalResult()
     end
-    -- Other alias
-    LuaUnit.Run = LuaUnit.run
--- end class LuaUnit
+end
+
+function LuaUnit:scanTestSuite(testsuite)
+    local tests = {}
+    for fName, val in pairs(testsuite) do
+        local lName = fName:lower()
+        if self.isFunction(val) and lName:sub(1, 4) == "test" then
+            table.insert(tests, {name=fName, method=val, class=testsuite,})
+        end
+    end
+    return tests
+end
+
+function LuaUnit:runTestSuite(testsuite)
+    for _, test in ipairs(testsuite) do
+        LuaUnit:runTestMethod(test.name, test.class, test.method)
+    end
+end
+
+-------------------------------------------------------------------------------
+--
+-- Start the test runner by passing it the TestSuites, or the TestCases, or
+-- even a list of functions to run.
+--
+-- If no arguments are passed in then the command line is examined so you can
+-- call the test script with a filename or testname to run.
+--
+-- Signature:
+--
+--          LuaUnit:run()
+--          LuaUnit:run("test1", ...)
+--          LuaUnit:run(TestSuite1, TestSuite2, ...)
+--
+function LuaUnit:run(...)
+    local args = {...}
+    -- If we have args they are a list of names or a list of functions/classes
+    if #args > 0 then
+        for _, val in ipairs(args) do 
+            local testsuite = LuaUnit:scanTestSuite(val) 
+            self:runTestSuite(testsuite)
+        end
+    -- If no args then look at the command-line
+    elseif argv and #argv > 0 then
+        -- Run files passed on the command line
+        for i, v in ipairs(argv) do 
+            LuaUnit.runTestClassByName(i, v) 
+        end
+    -- Otherwise nothing to run because in OpenComputers there is no 
+    -- debug.getlocal and searching the local scope is crude anyway. We could
+    -- hunt the Global scope you should not put tests in the Global scope.
+    else
+        error("Nothing to run.")
+    end
+    return LuaUnit.result:displayFinalResult()
+end
+-- Other alias
+LuaUnit.Run = LuaUnit.run
 
 return LuaUnit
