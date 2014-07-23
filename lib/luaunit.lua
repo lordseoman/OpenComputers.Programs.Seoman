@@ -310,7 +310,7 @@ local UnitResult = { -- class
     end
 
     function UnitResult:displayOneFailedTest(failure)
-        local testName, errorMsg = unpack(failure)
+        local testName, errorMsg = table.unpack(failure)
         print(">>> "..testName.." failed")
         print(errorMsg)
     end

@@ -43,10 +43,6 @@ function TestClient:test_3_echo()
     assertEquals(req.target, res.source)
     assertEquals(res.reply, msg)
 end
-
-function TestClient:test_99_shutdown()
-    myscheduler:kill()
-end
     
 myscheduler:spawn("testrunner", LuaUnit.run, LuaUnit, TestClient)
-myscheduler:run()
+myscheduler:run(1)
