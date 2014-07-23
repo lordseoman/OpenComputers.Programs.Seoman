@@ -25,6 +25,8 @@ function TestClient:setup()
     self.c:setup()
     print("Starting the listener..")
     myscheduler:spawn("test_listener", self.c.listener, self.c)
+    -- Allow the listener to start up
+    myscheduler:wait(0.5)
 end
 
 function TestClient:tearDown()

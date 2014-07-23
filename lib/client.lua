@@ -41,6 +41,7 @@ function Client:setup()
     -- for the servers address. This way we don't need to store the servers
     -- address as we can register by broadcasting.
     self.service = self.config.service_name
+    self.timeout = self.config.timeout
 end
 
 -- Request the configuration items from the user
@@ -58,6 +59,8 @@ function Client:loadConfig()
         -- Name of the service we are using, this should be the same as the 
         -- server is registered with.
         service_name = "remote_command",
+        -- How long to wait for responses
+        timeout = 5,
     }
 end
 
@@ -121,7 +124,7 @@ function Client:send(request, callback, ...)
         retVal = request.id
     else
         print("Waiting for registration response..")
-        scheduler:waitForEvent(msgId)
+        scheduler:waitForEvent(msgId, self.timeout)
         retVal = request.response
     end
     return retVal

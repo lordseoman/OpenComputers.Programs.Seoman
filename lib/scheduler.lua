@@ -527,7 +527,7 @@ function Scheduler:feed(...)
                     -- Remove the last argument, MUST be a timeout value
                     local timeout = tonumber(table.remove(ret))
                     if timeout == nil then
-                        print("["..thread_name.."]: invalid timeout: " .. ret[1])
+                        print("["..thread_name.."]: invalid timeout: " .. tostring(ret[1]))
                         thread.state = "suspending"
                     else
                         thread.suspend_time = time
