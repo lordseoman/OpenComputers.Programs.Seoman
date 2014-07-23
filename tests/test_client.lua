@@ -16,7 +16,7 @@ local Client = require("client")
 local LuaUnit = require("luaunit")
 
 local MyClient = func.inheritsFrom(Client)
-local scheduler = Scheduler:new{}
+local myscheduler = Scheduler:new{}
 local TestClient = {}
 
 function TestClient:setup()
@@ -24,12 +24,12 @@ function TestClient:setup()
     self.c = MyClient:new()
     self.c:setup()
     print("Starting the listener..")
-    scheduler:spawn("test_listener", self.c.listener, self.c)
+    myscheduler:spawn("test_listener", self.c.listener, self.c)
 end
 
 function TestClient:tearDown()
     print("Called tearDown.")
-    scheduler:kill()
+    myscheduler:kill()
 end
 
 function TestClient:test_1_register()
@@ -47,4 +47,5 @@ function TestClient:test_2_echo()
     assertEquals(res.reply, msg)
 end
 
-LuaUnit:run(TestClient)
+myscheduler:spawn("testrunner", LuaUnit.run, LuaUnit, TestClient)
+myscheduler:run()

@@ -112,7 +112,24 @@ function Scheduler:_wrapFunction(func)
                 break
             end
         end
-    end)
+    end
+end
+
+-------------------------------------------------------------------------------
+--
+-- Create the command thread.
+--
+-- This is the thread that monitors the signals and manages the other threads
+-- with yields and resumes.
+--
+function Scheduler:createRunner(limit)
+    return coroutine.create(function()
+        local status, result = pcall(self.run, self, limit)
+        if not status then
+            print("Error from createRunner..")
+        end
+        print("Runner is terminated..")
+    end
 end
 
 -------------------------------------------------------------------------------
@@ -322,9 +339,21 @@ function Scheduler:isShutdownCode(event)
     return keyboard.isControlDown() and keyboard.isAltDown() and keyboard.isKeyDown(keyboard.keys.c)
 end
 
+-------------------------------------------------------------------------------
+--
+-- Hook into the signals, event.pull calls computer.pullSignal(timeout) and
+-- yields back to the bootstrap (which is running init.lua in a thread), this
+-- then yields back to the system. Which presumeably resumes with the next 
+-- signal off the stack.
+--
+-- So when the signal comes back up event.lua will run through the signal 
+-- listeners, then the timers and finally do an event.shouldInterrupt() call
+-- which will cause the scheduler not to get the chance to shutdown. So we'll
+-- also overide the that.
+--
 function Scheduler:pullSignal(timeout)
     if timeout == nil then timeout = 0 end
-    return computer.pullSignal(timeout)
+    return event.pull(timeout)
 end
 
 function Scheduler:pushSignal(...)
@@ -333,6 +362,16 @@ function Scheduler:pushSignal(...)
         error("First argument to pushSignal must be string.")
     end
     computer.pushSignal(table.unpack(args))
+end
+
+function Scheduler:preStartup()
+    event._oldShouldInterrupt = event.shouldInterrupt
+    event.shouldInterrupt = function() return false end
+end
+
+function Scheduler:postShutdown()
+    event.shouldInterrupt = event._oldShouldInterrupt
+    event._oldShouldInterrupt = nil
 end
 
 -------------------------------------------------------------------------------
@@ -359,6 +398,7 @@ function Scheduler:run(limit)
     elseif limit < 0 then
         limit = limit + self:count()
     end
+    self:preStartup()
     --
     -- Run the event loop while there are enough sub-routines alive
     --
@@ -388,6 +428,7 @@ function Scheduler:run(limit)
     -- Send another terminate just in case
     print("Closing down any remaining threads.")
     self:feed("terminate")
+    self:postShutdown()
 end
 --
 -- Feed an event to each of the sub-routines, we check the event filter
