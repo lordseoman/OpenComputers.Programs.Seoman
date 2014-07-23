@@ -112,7 +112,7 @@ function Scheduler:_wrapFunction(func)
                 break
             end
         end
-    end
+    end)
 end
 
 -------------------------------------------------------------------------------
@@ -129,7 +129,7 @@ function Scheduler:createRunner(limit)
             print("Error from createRunner..")
         end
         print("Runner is terminated..")
-    end
+    end)
 end
 
 -------------------------------------------------------------------------------
