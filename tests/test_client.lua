@@ -44,5 +44,8 @@ function TestClient:test_3_echo()
     assertEquals(res.reply, msg)
 end
     
+function TestClient:test_1_setup()
+    myscheduler:kill("test_listener")
+end
 myscheduler:spawn("testrunner", LuaUnit.run, LuaUnit, TestClient)
-myscheduler:run(1)
+myscheduler:run()
