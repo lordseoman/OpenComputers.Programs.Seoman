@@ -15,6 +15,7 @@
 require("functions")
 local keyboard = require("keyboard")
 local computer = require("computer")
+local event = require("event")
 
 local Scheduler = {
     name="scheduler",

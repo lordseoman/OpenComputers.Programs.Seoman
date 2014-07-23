@@ -120,6 +120,7 @@ function Client:send(request, callback, ...)
         request.callback_args = {...}
         retVal = request.id
     else
+        print("Waiting for registration response..")
         scheduler:waitForEvent(msgId)
         retVal = request.response
     end

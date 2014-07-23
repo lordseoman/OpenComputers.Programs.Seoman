@@ -8,7 +8,7 @@
 -- Remove the cached packages so any changes come through.
 package.loaded.functions = nil
 package.loaded.scheduler = nil
-package.loaded.client = nill
+package.loaded.client = nil
 
 local func = require("functions")
 local Scheduler = require("scheduler")
