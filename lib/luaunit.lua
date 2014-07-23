@@ -476,7 +476,7 @@ function LuaUnit:runTestMethod(aName, aClassInstance, aMethod)
         return e..'\n'..debug.traceback()
     end
     -- run testMethod()
-    local ok, errorMsg = xpcall( aMethod, err_handler )
+    local ok, errorMsg = xpcall(aMethod, err_handler, aClassInstance)
     if not ok then
         errorMsg  = self.strip_luaunit_stack(errorMsg)
         LuaUnit.result:addFailure( errorMsg )
