@@ -47,5 +47,7 @@ end
 function TestClient:test_99_shutdown()
     myscheduler:kill("test_listener")
 end
-myscheduler:spawn("testrunner", LuaUnit.run, LuaUnit, TestClient)
+
+local testsuite = inheritsFrom(TestClient)
+myscheduler:spawn("testrunner", LuaUnit.run, LuaUnit, testsuite)
 myscheduler:run()
