@@ -19,8 +19,8 @@ local MyClient = func.inheritsFrom(Client)
 local myscheduler = Scheduler:new{}
 local TestClient = {}
 
-function TestClient:setup()
-    print("Called setup.")
+function TestClient:test_1_setup()
+    print("Setting up client.")
     self.c = MyClient:new()
     self.c:setup()
     print("Starting the listener..")
@@ -29,17 +29,12 @@ function TestClient:setup()
     myscheduler:wait(0.5)
 end
 
-function TestClient:tearDown()
-    print("Called tearDown.")
-    myscheduler:kill()
-end
-
-function TestClient:test_1_register()
+function TestClient:test_2_register()
     print("Registration test..")    
     assertEquals(self.c:register(), true)
 end
 
-function TestClient:test_2_echo()
+function TestClient:test_3_echo()
     print("Echo with wait test..")
     local msg = { barnie=1, [5]="suni",}
     local req = self.c:newRequest("echo", msg)
@@ -49,5 +44,9 @@ function TestClient:test_2_echo()
     assertEquals(res.reply, msg)
 end
 
+function TestClient:test_99_shutdown()
+    myscheduler:kill()
+end
+    
 myscheduler:spawn("testrunner", LuaUnit.run, LuaUnit, TestClient)
 myscheduler:run()
